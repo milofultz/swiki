@@ -16,10 +16,13 @@ pages dict schema
 """
 
 import os
+import re
 import sys
 
 import marko
 import frontmatter
+
+re_wikilink = re.compile(r'(?<={{).+?(?=}})')
 
 
 def make_wiki(pages_dir: str):
@@ -33,9 +36,10 @@ def make_wiki(pages_dir: str):
                 file_contents = f.read()
                 # get front matter and markdown from file
                 metadata, content = frontmatter.parse(file_contents)
-            print(metadata, content)
-
             # get all local links in the file and add to dict "links" prop
+            links = re_wikilink.findall(content)
+            print(links)
+
             # for each link
                 # if page not in dict, make one
                 # add current page to "backlinks" prop
