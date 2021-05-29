@@ -19,23 +19,28 @@ import os
 import sys
 
 import marko
+import frontmatter
 
-def make_wiki(dir: str):
+
+def make_wiki(pages_dir: str):
     # create pages dict
     pages = dict()
 
-    # for each file in all subfolders
-    for subfolder, _, files in os.walk(dir):
+    # for each page in pages
+    for subfolder, _, files in os.walk(pages_dir):
         for file in files:
             with open(os.path.join(subfolder, file), 'r') as f:
-                print(file)
+                file_contents = f.read()
                 # get front matter and markdown from file
-                # get all local links in the file and add to dict "links" prop
-                # for each link
-                    # if page not in dict, make one
-                    # add current page to "backlinks" prop
-                # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
-                # split relative path into folders and set "folder" to that or just ['.']
+                metadata, content = frontmatter.parse(file_contents)
+            print(metadata, content)
+
+            # get all local links in the file and add to dict "links" prop
+            # for each link
+                # if page not in dict, make one
+                # add current page to "backlinks" prop
+            # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
+            # split relative path into folders and set "folder" to that or just ['.']
 
     # for each page in dict
         # render the markdown
