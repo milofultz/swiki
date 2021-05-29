@@ -44,6 +44,12 @@ def make_wiki(dir: str):
 
 
 if __name__ == "__main__":
-    dir = sys.argv[1] if len(sys.argv) == 2 else os.getcwdb()
+    if len(sys.argv) != 3:
+        sys.exit('Args must be input and output folder')
+    _, root, output = sys.argv
+    if not os.path.isdir(root):
+        sys.exit('Input folder not found')
+    if not os.path.isdir(output):
+        os.mkdir(output)
 
-    make_wiki(dir)
+    make_wiki(root)
