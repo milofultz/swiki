@@ -137,7 +137,7 @@ def make_wiki(pages_dir: str, output_dir: str):
         sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
                                       info.get('folder', ''),
                                       sitemap)
-        content = f'<h1>{info["metadata"].get("title")}</h1>\n{content}'
+        content = f'<h1 id="title">{info["metadata"].get("title")}</h1>\n{content}'
         content = place_in_container('section', 'content', content)
         content = add_backlinks(content, info.get('backlinks', []))
         content = place_in_container('main', 'main', content)
