@@ -54,8 +54,12 @@ def add_backlinks(content: str, backlinks: list) -> str:
     if not backlinks:
         return content
     backlinks_html = '<section id="backlinks"><h2>Backlinks:</h2><ul>'
+    seen_backlinks = set()
     for backlink in backlinks:
         title, filename = backlink.get('title'), backlink.get('filename')
+        if title in seen_backlinks:
+            continue
+        seen_backlinks.add(title)
         backlinks_html += f'<li><a href="{filename}.html">{title}</a></li>'
     backlinks_html += '</ul></section>'
     return content + backlinks_html
@@ -108,7 +112,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                 if not pages[link_filename].get('backlinks'):
                     pages[link_filename]['backlinks'] = []
                 # add current page to "backlinks" prop
-                pages[link_filename]['backlinks'].append({'title': page['metadata'].get('title'),
+                pages[link_filename]['backlinks'].append({'title': page['metadata'].get('title', page_filename),
                                                           'filename': page_filename})
 
             # add page info to pages dict
