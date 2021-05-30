@@ -1,3 +1,4 @@
 marko==1.0.2
+Pygments==2.9.0
 python-frontmatter==1.0.0
 PyYAML==5.4.1

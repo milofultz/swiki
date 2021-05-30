@@ -3,12 +3,16 @@ import os
 import re
 import sys
 
-import marko
+# import marko
+# from marko.ext.gfm import gfm as marko
+from marko import Markdown
 import frontmatter
 
 
 RESERVED = ['index']
 re_wikilink = re.compile(r'{{.+?}}')
+re_external_link = re.compile(r'<a href=".+"')
+marko = Markdown(extensions=['codehilite', 'gfm'])
 
 
 def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
@@ -36,6 +40,14 @@ def add_page_to_sitemap(page_info: dict, folder: str, sitemap: defaultdict):
 def kebabify(text: str) -> str:
     """ Format text to filename kebab-case """
     return text.replace(' ', '-').lower()
+
+
+def add_external_link_data(html: str) -> str:
+    """ Modify all anchor tags for external links """
+    def add_target_blank(match: re.Match):
+        text = match.group()
+        return f'{text} target="_blank"'
+    return re_external_link.sub(add_target_blank, html)
 
 
 def add_local_links(html: str) -> str:
@@ -70,8 +82,8 @@ def add_backlinks(content: str, backlinks: list) -> str:
 
 def fill_frame(frame: str, content: str, metadata: dict) -> str:
     """ Fill out HTML frame with page information """
-    frame = frame.replace('{{title}}', metadata.get('title'))
-    frame = frame.replace('{{description}}', metadata.get('description'))
+    frame = frame.replace('{{title}}', metadata.get('title', ''))
+    frame = frame.replace('{{description}}', metadata.get('description', ''))
     frame = frame.replace('{{content}}', content)
     return frame
 
@@ -96,7 +108,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 
     page_html = place_in_container('main', 'main', index_html + sitemap_html)
 
-    filled_frame = fill_frame(frame, page_html, index.get('metadata'))
+    filled_frame = fill_frame(frame, page_html, index.get('metadata', dict()))
     with open(os.path.join(output_dir, 'index.html'), 'w') as f:
         f.write(filled_frame)
 
@@ -137,7 +149,7 @@ def make_wiki(pages_dir: str, output_dir: str):
     with open(os.path.join(pages_dir, '__frame.html'), 'r') as f:
         frame = f.read()
 
-    index = dict()
+    index = {'metadata': dict()}
     for page, info in pages.items():
         # If it's the index page, don't build yet and save for sitemap
         if info.get('index'):
@@ -149,6 +161,7 @@ def make_wiki(pages_dir: str, output_dir: str):
         info['metadata'] = {'title': info['metadata'].get('title', page),
                             'description': info['metadata'].get('description', '')}
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
+        content = add_external_link_data(content)
         # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
         content = add_local_links(content)
         sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},

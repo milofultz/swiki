@@ -74,6 +74,14 @@
 
         a:hover { color: var(--anchor-hover); }
 
+        [target="_blank"]::after {
+          content: "↗️";
+          display: inline-block;
+          height: 1rem;
+          margin-left: 3px;
+          width: 1rem;
+        }
+
         code, pre {
           background-color: var(--background-off);
           border-radius: 4px;
@@ -117,6 +125,31 @@
         }
 
         hr { color: var(--text-off); }
+
+        table, th, td {
+          border: 1px solid var(--text-off);
+          border-collapse: collapse;
+          padding: .5rem;
+        }
+
+        /* Syntax Highlighting */
+
+        :root {
+          --red:    #ff6188;
+          --orange: #fc9867;
+          --yellow: #ffd866;
+          --green:  #a9dc76;
+          --blue:   #78dce8;
+          --purple: #ab9df2;
+        }
+
+        .k, .nd, .kd, .na { color: var(--blue); }
+        .nf, .nb, .nc, .k { color: var(--green); }
+        .c, .c1, .p, .si { color: var(--text-off); }
+        .n, .nv, .nx { color: var(--orange); }
+        .s, .s1, .s2 { color: var(--yellow); }
+        .mi, .kc, .mf { color: var(--purple); }
+        .k, .kn, .kt, .nt, .o, .sr { color:  var(--red); }
     </style>
 </head>
 <body>
