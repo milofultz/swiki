@@ -79,8 +79,8 @@ def add_title(content: str, title: str) -> str:
     return f'<h1>{title}</h1>\n{content}'
 
 
-def contain(element: str, content: str) -> str:
-    return f'<{element} class="content">{content}</{element}>'
+def contain(element: str, html_id: str, content: str) -> str:
+    return f'<{element} id="{html_id}">{content}</{element}>'
 
 
 def add_backlinks(content: str, backlinks: list) -> str:
@@ -130,7 +130,7 @@ def make_sitemap(sitemap: dict, output_dir: str):
         # close ul
         sitemap_html += '</ul>'
     # contain html
-    sitemap_html = contain('main', sitemap_html)
+    sitemap_html = contain('main', 'sitemap', sitemap_html)
     # write to _sitemap.html
     with open(os.path.join(output_dir, '_sitemap.html'), 'w') as f:
         f.write(sitemap_html)
@@ -186,11 +186,11 @@ def make_wiki(pages_dir: str, output_dir: str):
             content = 'There\'s currently nothing here.'
         content = add_title(content, info['metadata'].get('title'))
         # put content into section container
-        content = contain('section', content)
+        content = contain('section', 'content', content)
         # add backlinks
         content = add_backlinks(content, info.get('backlinks', []))
         # put everything inside of a main element
-        content = contain('main', content)
+        content = contain('main', 'main', content)
         # fill HTML `head` with front matter
         # put into HTML frame (has everything but the content)
         filled_frame = fill_frame(frame, content, info.get('metadata', []))
