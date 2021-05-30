@@ -1,4 +1,4 @@
-# SWIKI
+# {{SWIKI}}
 
 Make a wiki with backlinking from Markdown fast.
 
