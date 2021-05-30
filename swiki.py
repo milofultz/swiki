@@ -72,10 +72,11 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
 def make_sitemap(sitemap: dict, frame: str, output_dir: str):
     """ Make sitemap out of all seen pages """
     sitemap_html = ''
-    for folder, folder_list in sitemap.items():
-        sitemap_html += f'<h2>{folder or "[root]"}</h2><ul>'
+    sorted_folders = sorted(sitemap.keys(), key=lambda folder: folder.lower())
+    for folder in sorted_folders:
         # sort the contents on the folder list by title
-        folder_list = sorted(folder_list, key=lambda page: page.get('title').lower())
+        folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
+        sitemap_html += f'<h2>{folder or "[root]"}</h2><ul>'
         for page in folder_list:
             title, filename = page.get('title'), page.get('filename')
             sitemap_html += f'<li><a href="{filename}.html">{title}</a></li>'
