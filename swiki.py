@@ -78,8 +78,8 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
 
 def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
     """ Make sitemap out of index and all seen pages """
-    index_html = f'<h1 id="title">{index["metadata"].get("title")}</h1>'
-    index_html += marko.convert(index.get('content'))
+    index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
+    index_html += marko.convert(index.get('content', ''))
     index_html = place_in_container('section', 'index', index_html)
 
     sitemap_html = ''
