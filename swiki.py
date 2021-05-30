@@ -69,7 +69,7 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
     return frame
 
 
-def make_sitemap(sitemap: dict, output_dir: str):
+def make_sitemap(sitemap: dict, frame: str, output_dir: str):
     """ Make sitemap out of all seen pages """
     sitemap_html = ''
     for folder, folder_list in sitemap.items():
@@ -81,8 +81,9 @@ def make_sitemap(sitemap: dict, output_dir: str):
             sitemap_html += f'<li><a href="{filename}.html">{title}</a></li>'
         sitemap_html += '</ul>'
     sitemap_html = place_in_container('main', 'sitemap', sitemap_html)
+    filled_frame = fill_frame(frame, sitemap_html, {'title': 'Sitemap', 'description': ''})
     with open(os.path.join(output_dir, '_sitemap.html'), 'w') as f:
-        f.write(sitemap_html)
+        f.write(filled_frame)
 
 
 def make_wiki(pages_dir: str, output_dir: str):
@@ -140,7 +141,7 @@ def make_wiki(pages_dir: str, output_dir: str):
         with open(os.path.join(output_dir, f'{page}.html'), 'w') as f:
             f.write(filled_frame)
 
-    make_sitemap(sitemap, output_dir)
+    make_sitemap(sitemap, frame, output_dir)
 
 
 if __name__ == "__main__":
