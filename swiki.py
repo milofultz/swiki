@@ -7,7 +7,6 @@ import marko
 import frontmatter
 
 
-IGNORE = ['.DS_Store']
 re_wikilink = re.compile(r'{{.+?}}')
 
 
@@ -76,7 +75,7 @@ def make_sitemap(sitemap: dict, output_dir: str):
     for folder, folder_list in sitemap.items():
         sitemap_html += f'<h2>{folder or "[root]"}</h2><ul>'
         # sort the contents on the folder list by title
-        sorted(folder_list, key=lambda page: page.get('title'))
+        folder_list = sorted(folder_list, key=lambda page: page.get('title').lower())
         for page in folder_list:
             title, filename = page.get('title'), page.get('filename')
             sitemap_html += f'<li><a href="{filename}.html">{title}</a></li>'
@@ -98,7 +97,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                 continue
             rel_path = subfolder.replace(pages_dir, '')
             page = make_page_dict(subfolder, file, rel_path)
-            page_filename = kebabify(page['metadata'].get('title'))
+            page_filename = kebabify(page['metadata'].get('title', os.path.splitext(file)[0]))
 
             # add backlinks to all pages this page links to
             for link in page['links']:
@@ -123,12 +122,12 @@ def make_wiki(pages_dir: str, output_dir: str):
     for page, info in pages.items():
         # If page is linked to but it hasn't been made yet, give it placeholder metadata
         if not info.get('metadata'):
-            info['metadata'] = {'title': page, 'description': ''}
-            content = 'There\'s currently nothing here.'
-        else:
-            content = marko.convert(info.get('content', ''))
-            # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
-            content = add_local_links(content)
+            info['metadata'] = dict()
+        info['metadata'] = {'title': info['metadata'].get('title', page),
+                            'description': info['metadata'].get('description', '')}
+        content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
+        # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
+        content = add_local_links(content)
         sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
                                       info.get('folder', ''),
                                       sitemap)
