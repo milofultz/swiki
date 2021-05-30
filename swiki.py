@@ -7,6 +7,7 @@ import marko
 import frontmatter
 
 
+RESERVED = ['index']
 re_wikilink = re.compile(r'{{.+?}}')
 
 
@@ -19,6 +20,8 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
         page['metadata'], page['content'] = frontmatter.parse(file_contents)
     # get all local links in the file
     page['links'] = re_wikilink.findall(page.get('content'))
+    if file == '__index.md':
+        page['index'] = True
     return page
 
 
@@ -73,8 +76,12 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
     return frame
 
 
-def make_sitemap(sitemap: dict, frame: str, output_dir: str):
-    """ Make sitemap out of all seen pages """
+def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
+    """ Make sitemap out of index and all seen pages """
+    index_html = f'<h1 id="title">{index["metadata"].get("title")}</h1>'
+    index_html += marko.convert(index.get('content'))
+    index_html = place_in_container('section', 'index', index_html)
+
     sitemap_html = ''
     sorted_folders = sorted(sitemap.keys(), key=lambda folder: folder.lower())
     for folder in sorted_folders:
@@ -85,9 +92,12 @@ def make_sitemap(sitemap: dict, frame: str, output_dir: str):
             title, filename = page.get('title'), page.get('filename')
             sitemap_html += f'<li><a href="{filename}.html">{title}</a></li>'
         sitemap_html += '</ul>'
-    sitemap_html = place_in_container('main', 'sitemap', sitemap_html)
-    filled_frame = fill_frame(frame, sitemap_html, {'title': 'Sitemap', 'description': ''})
-    with open(os.path.join(output_dir, '_sitemap.html'), 'w') as f:
+    sitemap_html = place_in_container('section', 'sitemap', sitemap_html)
+
+    page_html = place_in_container('main', 'main', index_html + sitemap_html)
+
+    filled_frame = fill_frame(frame, page_html, index.get('metadata'))
+    with open(os.path.join(output_dir, 'index.html'), 'w') as f:
         f.write(filled_frame)
 
 
@@ -98,12 +108,14 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     for subfolder, _, files in os.walk(pages_dir):
         for file in files:
+            filename, extension = os.path.splitext(file)
             # if wiki meta file or not a markdown page, ignore it
-            if file[0:2] == '__' or os.path.splitext(file)[1] != '.md':
+            if extension != '.md':
                 continue
             rel_path = subfolder.replace(pages_dir, '')
             page = make_page_dict(subfolder, file, rel_path)
-            page_filename = kebabify(page['metadata'].get('title', os.path.splitext(file)[0]))
+            page_filename = kebabify(page['metadata'].get('title', filename))
+            page_filename = page_filename if page_filename not in RESERVED else page_filename + '_'
 
             # add backlinks to all pages this page links to
             for link in page['links']:
@@ -125,7 +137,12 @@ def make_wiki(pages_dir: str, output_dir: str):
     with open(os.path.join(pages_dir, '__frame.html'), 'r') as f:
         frame = f.read()
 
+    index = dict()
     for page, info in pages.items():
+        # If it's the index page, don't build yet and save for sitemap
+        if info.get('index'):
+            index = info
+            continue
         # If page is linked to but it hasn't been made yet, give it placeholder metadata
         if not info.get('metadata'):
             info['metadata'] = dict()
@@ -141,12 +158,12 @@ def make_wiki(pages_dir: str, output_dir: str):
         content = place_in_container('section', 'content', content)
         content = add_backlinks(content, info.get('backlinks', []))
         content = place_in_container('main', 'main', content)
-        filled_frame = fill_frame(frame, content, info.get('metadata', []))
+        filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
 
         with open(os.path.join(output_dir, f'{page}.html'), 'w') as f:
             f.write(filled_frame)
 
-    make_sitemap(sitemap, frame, output_dir)
+    make_sitemap(index, sitemap, frame, output_dir)
 
 
 if __name__ == "__main__":
