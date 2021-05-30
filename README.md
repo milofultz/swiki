@@ -29,11 +29,17 @@ A `__frame.html` file in the input directory with all of your markdown files. Th
     {{content}}
 
     <footer>
-        <a href="_sitemap.html">Sitemap</a>
+        <a href="index.html">Sitemap</a>
     </footer>
 </body>
 </html>
 ```
+
+### Index/Sitemap
+
+A file named `__index.md` can be used for the index and sitemap of your wiki. Whatever you put in here will be rendered as all the other pages will be, but with the sitemap appended to the end.
+
+The sitemap is organized by the structure of your markdown pages and which folders they reside in (e.g. a file in the root folder will be in a different section than a file in a subfolder).
 
 ### Pages
 
@@ -41,7 +47,6 @@ A `__frame.html` file in the input directory with all of your markdown files. Th
 
 * The front matter currently uses the `title` and `description` fields.
 * Wiki-style links can be made to other pages with `{{double curly braces}}`. Note that this matches the *title* in the front matter, not the markdown file's *filename*.
-* How you organize your markdown files will determine how the sitemap's file structure will be displayed. The sitemap is organized by folder name, and the folder's contents are sorted by title.
 
 ```
 ---
@@ -54,10 +59,10 @@ This is the content of the {{Markdown}} file. This {{reference}} doesn't exist.
 
 This would render out four files:
 
-* `rendering-a-page.html` - This is the file you see above.
-* `markdown.html` - This file would exist with only backlinks, as no file with a title of 'Markdown' exists.
-* `reference.html` - This file would also exist with only backlinks for the same reason.
-* `_sitemap.html`
+* `rendering-a-page.html` - The file you see above.
+* `markdown.html` - This file exists with only backlinks, as no file with a title of 'Markdown' exists.
+* `reference.html` - This file also exists with only backlinks for the same reason.
+* `index.html` - The index and sitemap, containing the rendered contents of `__index.md` and a sitemap of all three above pages.
 
 ### Rendering
 
