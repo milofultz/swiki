@@ -39,7 +39,7 @@ def kebabify(text: str) -> str:
 def add_local_links(html: str) -> str:
     """ Replace all {{...}} with anchor tags """
     def make_link(match: re.Match):
-        text = match.group()[2:-2]
+        text = match.group()[2:-2].strip()
         filename = kebabify(text)
         return f'<a href="{filename}.html">{text}</a>'
     return re_wikilink.sub(make_link, html)
