@@ -49,8 +49,15 @@ title: Rendering A Page
 description: This will become the meta description.
 ---
 
-stuff {{wikilink}} other stuff {{wiki link with space}}
+This is the content of the {{Markdown}} file. This {{reference}} doesn't exist.
 ```
+
+This would render out four files:
+
+* `rendering-a-page.html` - This is the file you see above.
+* `markdown.html` - This file would exist with no content, as no file with a title of 'Markdown' exists.
+* `reference.html` - This file would also exist with no content for the same reason.
+* `_sitemap.html`
 
 ### Rendering
 
