@@ -38,6 +38,32 @@ def add_local_links(html: str) -> str:
     return re_wikilink.sub(make_link, html)
 
 
+def contain(content: str) -> str:
+    return f'<section class="content">{content}</section>'
+
+
+def add_backlinks(content: str, backlinks: list) -> str:
+    # if no backlinks
+    if not backlinks:
+        # return content
+        return content
+    # create div
+    backlinks_html = '<section id="backlinks">'
+    # create heading and unordered list
+    backlinks_html += '<h2>Backlinks:</h2><ul>'
+    # for each link
+    for backlink in backlinks:
+        title, filename = backlink.items()
+        # fill out list item and link inside
+        backlinks_html += f'<li><a href="{filename}.html">{title}</a></li>'
+    # close unordered list
+    backlinks_html += '</ul>'
+    # close div
+    backlinks_html += '</section>'
+    # append new div to content
+    return content + backlinks_html
+
+
 def make_wiki(pages_dir: str):
     # create pages dict
     pages = defaultdict(dict)
@@ -45,6 +71,8 @@ def make_wiki(pages_dir: str):
     # for each page in pages
     for subfolder, _, files in os.walk(pages_dir):
         for file in files:
+            if file[0:2] == '__':
+                continue
             page = dict()
             page_filename = kebabify(os.path.splitext(file)[0])
             # split relative path into folders and set "folder" to that or just ['.']
@@ -64,7 +92,10 @@ def make_wiki(pages_dir: str):
                 if not pages[link_filename].get('backlinks'):
                     pages[link_filename]['backlinks'] = []
                 # add current page to "backlinks" prop
-                pages[link_filename]['backlinks'].append(page_filename)
+                pages[link_filename]['backlinks'].append(
+                    {'title': page['metadata'].get('title'),
+                     'filename': page_filename}
+                )
 
             # add page info to pages dict
             if pages.get(page_filename):
@@ -72,16 +103,27 @@ def make_wiki(pages_dir: str):
             else:
                 pages[page_filename] = page
 
+    with open(os.path.join(pages_dir, '__frame.html'), 'r') as f:
+        frame = f.read()
 
     # for each page in dict
     for page, info in pages.items():
         # render the markdown
-        html = marko.convert(info.get('content', ''))
+        if markdown := info.get('content', ''):
+            content = marko.convert(markdown)
+        else:
+            content = 'There\'s currently nothing here.'
         # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
-        html_with_links = add_local_links(html)
+        content = add_local_links(content)
+        # put content into section container
+        content = contain(content)
+        # add backlinks
+        content = add_backlinks(content, info.get('backlinks', []))
         # fill HTML `head` with front matter
+        # content = add_meta(content, info.get('backlinks', []))
         # put into HTML frame (has everything but the content)
-        print(html_with_links)
+        # html = fill_frame(frame, content)
+        print(content)
 
 
 if __name__ == "__main__":
