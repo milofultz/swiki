@@ -77,14 +77,17 @@
         [target="_blank"]::after {
           content: "↗️";
           display: inline-block;
+          font-size: .75rem;
           height: 1rem;
-          margin-left: 3px;
+          margin-left: .25rem;
+          vertical-align: super;
           width: 1rem;
         }
 
         code, pre {
-          background-color: var(--background-off);
+          background-color: var(--light-black);
           border-radius: 4px;
+          color: var(--white);
           font-family: monospace;
           padding: 1rem;
         }
@@ -132,6 +135,8 @@
           padding: .5rem;
         }
 
+        thead tr, tbody tr:nth-child(2n) { background-color: var(--background-off); }
+
         /* Syntax Highlighting */
 
         :root {
@@ -143,13 +148,27 @@
           --purple: #ab9df2;
         }
 
-        .k, .nd, .kd, .na { color: var(--blue); }
-        .nf, .nb, .nc, .k { color: var(--green); }
-        .c, .c1, .p, .si { color: var(--text-off); }
-        .n, .nv, .nx { color: var(--orange); }
-        .s, .s1, .s2 { color: var(--yellow); }
-        .mi, .kc, .mf { color: var(--purple); }
-        .k, .kn, .kt, .nt, .o, .sr { color:  var(--red); }
+        .k, .nd, .kd, .na {
+          color: var(--blue);
+        }
+        .nf, .nb, .nc, .k {
+          color: var(--green);
+        }
+        .c, .c1, .p, .si {
+          color: #aaa;
+        }
+        .n, .nv, .nx {
+          color: var(--orange);
+        }
+        .s, .s1, .s2 {
+          color: var(--yellow);
+        }
+        .mi, .kc, .mf {
+          color: var(--purple);
+        }
+        .k, .kn, .kt, .nt, .o, .sr {
+          color:  var(--red);
+        }
     </style>
 </head>
 <body>

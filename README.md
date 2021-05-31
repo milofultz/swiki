@@ -46,7 +46,9 @@ The sitemap is organized by the structure of your markdown pages and which folde
 [Markdown](https://spec.commonmark.org/0.29/) files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/) will be accepted and added into your wiki's file structure. 
 
 * The front matter currently uses the `title` and `description` fields.
-* Wiki-style links can be made to other pages with `{{double curly braces}}`. Note that this matches the *title* in the front matter, not the markdown file's *filename*.
+* Wiki-style links are made using `{{double curly braces}}` and are case insensitive. They can be made two ways (note that they reference the *title* not the *filename*):
+    * `{{example}}` - Displays the text 'example' and goes to the page whose title is 'example'.
+    * `{{shown text|example}}` - Displays the text 'shown text' and goes to the page whose title is 'example'.
 
 ```
 ---
@@ -54,14 +56,14 @@ title: Rendering A Page
 description: This will become the meta description.
 ---
 
-This is the content of the {{Markdown}} file. This {{reference}} doesn't exist.
+This is the content of the {{Markdown}} file. This {{Markdown reference|Markdown}} doesn't exist, but the {{page}} will.
 ```
 
 This would render out four files:
 
 * `rendering-a-page.html` - The file you see above.
 * `markdown.html` - This file exists with only backlinks, as no file with a title of 'Markdown' exists.
-* `reference.html` - This file also exists with only backlinks for the same reason.
+* `page.html` - This file exists with only backlinks, for the same reason.
 * `index.html` - The index and sitemap, containing the rendered contents of `__index.md` and a sitemap of all three above pages.
 
 ### Rendering

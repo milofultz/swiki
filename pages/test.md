@@ -3,4 +3,4 @@ title: yeah
 description: uh huh
 ---
 
-stuff {{wikilink}} other stuff {{wiki link with space}}
+stuff {{pepsi|wikilink}} other stuff {{wiki link with space}}

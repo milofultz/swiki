@@ -1,17 +1,14 @@
 from collections import defaultdict
 import os
-import re
 import sys
 
-# import marko
-# from marko.ext.gfm import gfm as marko
 from marko import Markdown
 import frontmatter
 
+import modules.link_utilities as links
+
 
 RESERVED = ['index']
-re_wikilink = re.compile(r'{{.+?}}')
-re_external_link = re.compile(r'<a href=".+"')
 marko = Markdown(extensions=['codehilite', 'gfm'])
 
 
@@ -23,7 +20,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
         file_contents = f.read()
         page['metadata'], page['content'] = frontmatter.parse(file_contents)
     # get all local links in the file
-    page['links'] = re_wikilink.findall(page.get('content'))
+    page['links'] = links.get_local(page.get('content'))
     if file == '__index.md':
         page['index'] = True
     return page
@@ -37,47 +34,9 @@ def add_page_to_sitemap(page_info: dict, folder: str, sitemap: defaultdict):
     return sitemap
 
 
-def kebabify(text: str) -> str:
-    """ Format text to filename kebab-case """
-    return text.replace(' ', '-').lower()
-
-
-def add_external_link_data(html: str) -> str:
-    """ Modify all anchor tags for external links """
-    def add_target_blank(match: re.Match):
-        text = match.group()
-        return f'{text} target="_blank"'
-    return re_external_link.sub(add_target_blank, html)
-
-
-def add_local_links(html: str) -> str:
-    """ Replace all {{...}} with anchor tags """
-    def make_link(match: re.Match):
-        text = match.group()[2:-2].strip()
-        filename = kebabify(text)
-        return f'<a href="{filename}.html">{text}</a>'
-    return re_wikilink.sub(make_link, html)
-
-
 def place_in_container(element: str, html_id: str, content: str) -> str:
     """ Place content in container with ID """
     return f'<{element} id="{html_id}">{content}</{element}>'
-
-
-def add_backlinks(content: str, backlinks: list) -> str:
-    """ Add backlinks section to content """
-    if not backlinks:
-        return content
-    backlinks_html = '<section id="backlinks"><h2>Backlinks:</h2><ul>'
-    seen_backlinks = set()
-    for backlink in backlinks:
-        title, filename = backlink.get('title'), backlink.get('filename')
-        if title in seen_backlinks:
-            continue
-        seen_backlinks.add(title)
-        backlinks_html += f'<li><a href="{filename}.html">{title}</a></li>'
-    backlinks_html += '</ul></section>'
-    return content + backlinks_html
 
 
 def fill_frame(frame: str, content: str, metadata: dict) -> str:
@@ -126,12 +85,13 @@ def make_wiki(pages_dir: str, output_dir: str):
                 continue
             rel_path = subfolder.replace(pages_dir, '')
             page = make_page_dict(subfolder, file, rel_path)
-            page_filename = kebabify(page['metadata'].get('title', filename))
-            page_filename = page_filename if page_filename not in RESERVED else page_filename + '_'
+            page_filename = links.kebabify(page['metadata'].get('title', filename))
+            if page_filename in RESERVED:
+                page_filename += '_'
 
             # add backlinks to all pages this page links to
             for link in page['links']:
-                link_filename = kebabify(link[2:-2])
+                link_filename = links.kebabify(link)
                 # if page not yet in pages or doesn't have a page yet, make an entry
                 if not pages[link_filename].get('backlinks'):
                     pages[link_filename]['backlinks'] = []
@@ -161,15 +121,15 @@ def make_wiki(pages_dir: str, output_dir: str):
         info['metadata'] = {'title': info['metadata'].get('title', page),
                             'description': info['metadata'].get('description', '')}
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = add_external_link_data(content)
+        content = links.add_external(content)
         # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
-        content = add_local_links(content)
+        content = links.add_local(content)
         sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
                                       info.get('folder', ''),
                                       sitemap)
         content = f'<h1 id="title">{info["metadata"].get("title")}</h1>\n{content}'
         content = place_in_container('section', 'content', content)
-        content = add_backlinks(content, info.get('backlinks', []))
+        content = links.add_backlinks(content, info.get('backlinks', []))
         content = place_in_container('main', 'main', content)
         filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
 
