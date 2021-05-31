@@ -41,6 +41,15 @@ A file named `__index.md` can be used for the index and sitemap of your wiki. Wh
 
 The sitemap is organized by the structure of your markdown pages and which folders they reside in (e.g. a file in the root folder will be in a different section than a file in a subfolder).
 
+```markdown
+---
+title: Website Title
+description: This will become the meta description.
+---
+
+This will be prepended to the sitemap/index of your wiki.
+```
+
 ### Pages
 
 [Markdown](https://spec.commonmark.org/0.29/) files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/) will be accepted and added into your wiki's file structure. 
@@ -50,7 +59,7 @@ The sitemap is organized by the structure of your markdown pages and which folde
     * `{{example}}` - Displays the text 'example' and goes to the page whose title is 'example'.
     * `{{shown text|example}}` - Displays the text 'shown text' and goes to the page whose title is 'example'.
 
-```
+```markdown
 ---
 title: Rendering A Page
 description: This will become the meta description.
