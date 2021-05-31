@@ -9,7 +9,7 @@ def get_local(content: str) -> list:
     local_links = list()
     for match in re_wikilink.finditer(content):
         match_text = match.group()[2:-2]  # remove curly braces
-        local_links.append(match_text.rsplit('|')[-1])  # filename if filename else text
+        local_links.append(match_text.rsplit('|')[-1].strip())  # filename if filename else text
     return local_links
 
 
