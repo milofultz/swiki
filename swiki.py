@@ -56,10 +56,9 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
     sitemap_html = ''
     sorted_folders = sorted(sitemap.keys(), key=lambda folder: folder.lower())
     for folder in sorted_folders:
-        # sort the contents on the folder list by title
-        folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
+        sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
         sitemap_html += f'<h2>{folder or "[root]"}</h2><ul>'
-        for page in folder_list:
+        for page in sorted_folder_list:
             title, filename = page.get('title'), page.get('filename')
             sitemap_html += f'<li><a href="{filename}.html">{title}</a></li>'
         sitemap_html += '</ul>'
@@ -75,7 +74,6 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 def make_wiki(pages_dir: str, output_dir: str):
     """ Create flat wiki out of all pages """
     pages = defaultdict(dict)
-    sitemap = defaultdict(dict)
 
     for subfolder, _, files in os.walk(pages_dir):
         for file in files:
@@ -109,9 +107,10 @@ def make_wiki(pages_dir: str, output_dir: str):
     with open(os.path.join(pages_dir, '__frame.html'), 'r') as f:
         frame = f.read()
 
+    sitemap = defaultdict(dict)
     index = {'metadata': dict()}
     for page, info in pages.items():
-        # If it's the index page, don't build yet and save for sitemap
+        # If it's the index/sitemap page, don't build it
         if info.get('index'):
             index = info
             continue
@@ -121,13 +120,9 @@ def make_wiki(pages_dir: str, output_dir: str):
         info['metadata'] = {'title': info['metadata'].get('title', page),
                             'description': info['metadata'].get('description', '')}
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = links.add_external(content)
-        # add a local link to any {{...}} words (href="lower-kebab-case-title.html")
-        content = links.add_local(content)
-        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
-                                      info.get('folder', ''),
-                                      sitemap)
         content = f'<h1 id="title">{info["metadata"].get("title")}</h1>\n{content}'
+        content = links.add_external(content)
+        content = links.add_local(content)
         content = place_in_container('section', 'content', content)
         content = links.add_backlinks(content, info.get('backlinks', []))
         content = place_in_container('main', 'main', content)
@@ -135,6 +130,10 @@ def make_wiki(pages_dir: str, output_dir: str):
 
         with open(os.path.join(output_dir, f'{page}.html'), 'w') as f:
             f.write(filled_frame)
+
+        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
+                                      info.get('folder', ''),
+                                      sitemap)
 
     make_sitemap(index, sitemap, frame, output_dir)
 
