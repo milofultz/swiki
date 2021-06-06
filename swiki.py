@@ -19,7 +19,6 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
     with open(os.path.join(subfolder, file), 'r') as f:
         file_contents = f.read()
         page['metadata'], page['content'] = frontmatter.parse(file_contents)
-    # get all local links in the file
     page['links'] = links.get_local(page.get('content'))
     if file == '__index.md':
         page['index'] = True
@@ -78,7 +77,6 @@ def make_wiki(pages_dir: str, output_dir: str):
     for subfolder, _, files in os.walk(pages_dir):
         for file in files:
             filename, extension = os.path.splitext(file)
-            # if wiki meta file or not a markdown page, ignore it
             if extension != '.md':
                 continue
             rel_path = subfolder.replace(pages_dir, '')
@@ -90,10 +88,9 @@ def make_wiki(pages_dir: str, output_dir: str):
             # add backlinks to all pages this page links to
             for link in page['links']:
                 link_filename = links.kebabify(link)
-                # if page not yet in pages or doesn't have a page yet, make an entry
                 if not pages[link_filename].get('backlinks'):
                     pages[link_filename]['backlinks'] = []
-                # add current page to "backlinks" prop
+                # add current page to "backlinks"
                 pages[link_filename]['backlinks'].append({'title': page['metadata'].get('title', page_filename),
                                                           'filename': page_filename})
 
@@ -103,7 +100,6 @@ def make_wiki(pages_dir: str, output_dir: str):
             else:
                 pages[page_filename] = page
 
-    # Load HTML frame file
     with open(os.path.join(pages_dir, '__frame.html'), 'r') as f:
         frame = f.read()
 
