@@ -88,6 +88,11 @@ def make_wiki(pages_dir: str, output_dir: str):
             # add backlinks to all pages this page links to
             for link in page['links']:
                 link_filename = links.kebabify(link)
+                # if page being linked to does not yet exist, give it the title
+                # as seen in the current page (e.g. Bob Fossil, not bob-fossil).
+                # This will be overwritten by the given title if the page exists.
+                if not pages[link_filename].get('metadata'):
+                    pages[link_filename]['metadata'] = {'title': link}
                 if not pages[link_filename].get('backlinks'):
                     pages[link_filename]['backlinks'] = []
                 # add current page to "backlinks"
