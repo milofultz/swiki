@@ -20,7 +20,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
         file_contents = f.read()
         page['metadata'], page['content'] = frontmatter.parse(file_contents)
     page['links'] = links.get_local(page.get('content'))
-    if file == '__index.md':
+    if file == '.index.md':
         page['index'] = True
     return page
 
@@ -100,7 +100,7 @@ def make_wiki(pages_dir: str, output_dir: str):
             else:
                 pages[page_filename] = page
 
-    with open(os.path.join(pages_dir, '__frame.html'), 'r') as f:
+    with open(os.path.join(pages_dir, '.frame.html'), 'r') as f:
         frame = f.read()
 
     sitemap = defaultdict(dict)
