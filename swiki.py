@@ -21,8 +21,9 @@ args = argparser.parse_args()
 
 
 def delete_current_html(directory: str):
-    html_files = [file for file in os.listdir(directory) if os.path.splitext(file)[1] == '.html']
-    print(html_files)
+    for file in os.listdir(directory):
+        if os.path.splitext(file)[1] == '.html':
+            os.unlink(os.path.join(directory, file))
 
 
 def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
@@ -157,7 +158,7 @@ if __name__ == "__main__":
         sys.exit(f'Input folder not found: {args.input_dir}')
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
-    if delete_current_html:
+    if args.delete_current_html:
         delete_current_html(args.output_dir)
 
     make_wiki(args.input_dir, args.output_dir)
