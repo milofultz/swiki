@@ -1,6 +1,7 @@
 import argparse
 from collections import defaultdict
 import os
+import re
 import sys
 
 from marko import Markdown
@@ -9,7 +10,7 @@ import frontmatter
 import modules.link_utilities as links
 
 
-RESERVED = ['index']
+RESERVED = ['index, fatfile']
 marko = Markdown(extensions=['codehilite', 'gfm'])
 
 
@@ -58,6 +59,17 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
     frame = frame.replace('{{description}}', metadata.get('description', ''))
     frame = frame.replace('{{content}}', content)
     return frame
+
+
+def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
+    """ Make fatfile out of content of every page """
+    fatfile = re.sub(re.compile(r'\sid=".*?"'), '', fatfile)
+    fatfile = '<h1>Fatfile</h1><p>This file contains the contents of every file in the wiki in no order whatsoever.</p>' + fatfile
+    fatfile = place_in_container('section', 'fatfile', fatfile)
+    fatfile = place_in_container('main', 'main', fatfile)
+    filled_frame = fill_frame(frame, fatfile, info.get('metadata', dict()))
+    with open(os.path.join(output_dir, 'fatfile.html'), 'w') as f:
+        f.write(filled_frame)
 
 
 def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
@@ -121,8 +133,11 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     with open(os.path.join(pages_dir, '.frame.html'), 'r') as f:
         frame = f.read()
+        # Remove extra space in frame CSS
+        frame = re.sub(re.compile(r'(?<=[;{}\n(*/)])[\s\n]*'), '', frame)
 
     sitemap = defaultdict(dict)
+    fatfile = ''
     index = {'metadata': dict()}
     for page, info in pages.items():
         # If it's the index/sitemap page, don't build it
@@ -138,8 +153,11 @@ def make_wiki(pages_dir: str, output_dir: str):
         content = f'<h1 id="title">{info["metadata"].get("title")}</h1>\n{content}'
         content = links.add_external(content)
         content = links.add_local(content)
-        content = place_in_container('section', 'content', content)
         content = links.add_backlinks(content, info.get('backlinks', []))
+
+        fatfile += place_in_container('article', '', content)
+
+        content = place_in_container('article', 'content', content)
         content = place_in_container('main', 'main', content)
         filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
 
@@ -150,6 +168,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                                       info.get('folder', ''),
                                       sitemap)
 
+    make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
     make_sitemap(index, sitemap, frame, output_dir)
 
 
