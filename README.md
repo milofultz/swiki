@@ -82,3 +82,10 @@ To render your wiki, run the script with the following syntax:
 ```bash
 python3 swiki.py path/to/markdown/folder path/to/output/folder
 ```
+
+## Future Improvements
+
+- Wipe "build" folder before building.
+- Ignore files and folders with a preceding underscore
+- Handle special characters in links and in backlinks. E.g. `{{async/await}}` throws because it resolves to `async/await.html`. Replace `/` with something else, like `:`? Also when a paren etc. is in the title, it just uses that. Should replace with something like the colon.
+- Add a "fat page" containing all pages for easy content searching by <kbd>Ctrl</kbd> + <kbd>F</kbd>. 
