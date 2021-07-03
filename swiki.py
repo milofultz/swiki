@@ -133,8 +133,10 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     with open(os.path.join(pages_dir, '.frame.html'), 'r') as f:
         frame = f.read()
-        # Remove extra space in frame CSS
-        frame = re.sub(re.compile(r'(?<=[;{}\n(*/)])[\s\n]*'), '', frame)
+        # Remove extra space in frame code
+        frame = re.sub(r'(?<=\n)\s*', '', frame)
+        frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
+        frame = re.sub(re.compile(r'(?<=[;{}(*/)])[\s]*'), '', frame)
 
     sitemap = defaultdict(dict)
     fatfile = ''
