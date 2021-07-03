@@ -1,3 +1,4 @@
+import argparse
 from collections import defaultdict
 import os
 import sys
@@ -10,6 +11,13 @@ import modules.link_utilities as links
 
 RESERVED = ['index']
 marko = Markdown(extensions=['codehilite', 'gfm'])
+
+
+argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
+argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
+argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
+argparser.add_argument('--delete-current-html', action='store_true', help='delete all HTML in output directory before building')
+args = argparser.parse_args()
 
 
 def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
@@ -140,12 +148,9 @@ def make_wiki(pages_dir: str, output_dir: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.exit('Args must be input and output folder')
-    _, root, output = sys.argv
-    if not os.path.isdir(root):
-        sys.exit('Input folder not found')
-    if not os.path.isdir(output):
-        os.mkdir(output)
+    if not os.path.isdir(args.input_dir):
+        sys.exit(f'Input folder not found: {args.input_dir}')
+    if not os.path.isdir(args.output_dir):
+        os.mkdir(args.output_dir)
 
-    make_wiki(root, output)
+    make_wiki(args.input_dir, args.output_dir)
