@@ -92,12 +92,13 @@ This would render out four files:
 To render your wiki, run the script with the following syntax:
 
 ```bash
-python3 swiki.py path/to/markdown/folder path/to/output/folder
+python3 swiki.py input_folder output_folder [flags]
 ```
 
 Flag | Effect
 --- | ---
 --delete-current-html | Non-recursively delete all existing HTML files in the build directory
+--no-fatfile | Do not create [fatfile](#fatfile) on build 
 
 ## Future Improvements
 
