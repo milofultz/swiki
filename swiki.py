@@ -68,7 +68,7 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
 def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
     """ Make fatfile out of content of every page """
     fatfile = re.sub(re.compile(r'\sid=".*?"'), '', fatfile)
-    fatfile = '<h1>Fatfile</h1><p>This file contains the contents of every file in the wiki in no order whatsoever.</p>' + fatfile
+    fatfile = '<h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>' + fatfile
     fatfile = place_in_container('section', 'fatfile', fatfile)
     fatfile = place_in_container('main', 'main', fatfile)
     filled_frame = fill_frame(frame, fatfile, info.get('metadata', dict()))
@@ -121,7 +121,7 @@ def make_wiki(pages_dir: str, output_dir: str):
             if extension != '.md':
                 continue
             page = make_page_dict(subfolder, file, rel_path)
-            page_filename = links.kebabify(page['metadata'].get('title', filename))
+            page_filename = links.kebabify(page['metadata'].get('title') or filename)
             if page_filename in RESERVED:
                 page_filename += '_'
 
@@ -172,7 +172,10 @@ def make_wiki(pages_dir: str, output_dir: str):
         content = links.add_backlinks(content, info.get('backlinks', []))
 
         if args.build_fatfile:
-            fatfile += place_in_container('article', '', content)
+            fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
+                                     f'<a href="{page}.html">{info["metadata"].get("title")}</a>',
+                                     content)
+            fatfile += place_in_container('article', '', fatfile_content)
 
         content = place_in_container('article', 'content', content)
         content = place_in_container('main', 'main', content)
