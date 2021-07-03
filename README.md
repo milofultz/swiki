@@ -42,6 +42,10 @@ A `.frame.html` file in the input directory with all of your markdown files. Thi
 </html>
 ```
 
+#### CSS File
+
+For styling, you can put a `<style>` tag in your `frame` file or link in a CSS file. If you include a CSS file in the root of your input folder, it will be copied over to the root of your output folder.
+
 ### Index/Sitemap
 
 A file named `.index.md` can be used for the index and sitemap of your wiki. Whatever you put in here will be rendered as all the other pages will be, but with the sitemap appended to the end.

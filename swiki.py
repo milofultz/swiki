@@ -2,6 +2,7 @@ import argparse
 from collections import defaultdict
 import os
 import re
+import shutil
 import sys
 
 from marko import Markdown
@@ -97,6 +98,12 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
         f.write(filled_frame)
 
 
+def copy_css_file(pages_dir: str, output_dir: str):
+    """ If CSS file in input directory, copy to output """
+    css_file = [file for file in os.listdir(pages_dir) if os.path.splitext(file)[1] == '.css'][0]
+    shutil.copy2(os.path.join(pages_dir, css_file), os.path.join(output_dir, css_file))
+
+
 def make_wiki(pages_dir: str, output_dir: str):
     """ Create flat wiki out of all pages """
     pages = defaultdict(dict)
@@ -178,6 +185,7 @@ def make_wiki(pages_dir: str, output_dir: str):
     if args.build_fatfile:
         make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
     make_sitemap(index, sitemap, frame, output_dir)
+    copy_css_file(pages_dir, output_dir)
 
 
 if __name__ == "__main__":
