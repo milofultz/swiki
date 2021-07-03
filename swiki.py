@@ -36,6 +36,8 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
     with open(os.path.join(subfolder, file), 'r') as f:
         file_contents = f.read()
         page['metadata'], page['content'] = frontmatter.parse(file_contents)
+    if not page['metadata'].get('description'):
+        page['metadata']['description'] = ''
     page['links'] = links.get_local(page.get('content'))
     if file == '.index.md':
         page['index'] = True
@@ -130,7 +132,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                 # as seen in the current page (e.g. Bob Fossil, not bob-fossil).
                 # This will be overwritten by the given title if the page exists.
                 if not pages[link_filename].get('metadata'):
-                    pages[link_filename]['metadata'] = {'title': link}
+                    pages[link_filename]['metadata'] = {'title': link, 'description': ''}
                 if not pages[link_filename].get('backlinks'):
                     pages[link_filename]['backlinks'] = []
                 # add current page to "backlinks"
