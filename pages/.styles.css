@@ -4,15 +4,18 @@
   --light-blue-1: #5EA3EC;
   --light-blue-2: #7EC3FF;
 
+  --dark-black: #1a1a1a;
   --black:  #222;
   --light-black: #333;
   --dark-gray: #6a6a6a;
   --light-gray: #9a9a9a;
   --dark-white: #e0e0e0;
   --white:  #f7f7f7;
+  --light-white:  #fff;
 }
 
 :root {
+  --background-alt: var(--light-white);
   --background: var(--white);
   --background-off: var(--dark-white);
   --text: var(--light-black);
@@ -23,6 +26,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --background-alt: var(--dark-black);
     --background: var(--black);
     --background-off: var(--light-black);
     --text: var(--dark-white);
@@ -136,10 +140,6 @@ footer {
   padding-top: 1.5rem;
 }
 
-footer > * + * {
-  margin-top: 1rem;
-}
-
 nav,
 footer .social {
   display: flex;
@@ -162,7 +162,7 @@ footer .social {
 #fatfile article { padding: 1rem 1.5rem; }
 
 #fatfile article:nth-child(2n+1) {
-  background-color: var(--background-off);
+  background-color: var(--background-alt);
   border-radius: 1rem;
 }
 
