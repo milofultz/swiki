@@ -24,6 +24,13 @@ A `.frame.html` file in the input directory with all of your markdown files. Thi
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="{{description}}">
     <title>{{title}}</title>
+    <style>
+        html, body {
+          margin: auto;
+          max-width: 38rem;
+          padding: 2rem;
+        }
+    </style>
 </head>
 <body>
     {{content}}
@@ -50,6 +57,10 @@ description: This will become the meta description.
 This will be prepended to the sitemap/index of your wiki.
 ```
 
+### Fatfile
+
+A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching. 
+
 ### Pages
 
 [Markdown](https://spec.commonmark.org/0.29/) files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/) will be accepted and added into your wiki's file structure. 
@@ -74,6 +85,7 @@ This would render out four files:
 * `markdown.html` - This file exists with only backlinks, as no file with a title of 'Markdown' exists.
 * `page.html` - This file exists with only backlinks, for the same reason.
 * `index.html` - The index and sitemap, containing the rendered contents of `.index.md` and a sitemap of all three above pages.
+* `fatfile.html` - The fatfile containing the contents of every page.
 
 ### Rendering
 
@@ -83,9 +95,11 @@ To render your wiki, run the script with the following syntax:
 python3 swiki.py path/to/markdown/folder path/to/output/folder
 ```
 
+Flag | Effect
+--- | ---
+--delete-current-html | Non-recursively delete all existing HTML files in the build directory
+
 ## Future Improvements
 
-- Wipe "build" folder before building.
 - Ignore files and folders with a preceding underscore
 - Handle special characters in links and in backlinks. E.g. `{{async/await}}` throws because it resolves to `async/await.html`. Replace `/` with something else, like `:`? Also when a paren etc. is in the title, it just uses that. Should replace with something like the colon.
-- Add a "fat page" containing all pages for easy content searching by <kbd>Ctrl</kbd> + <kbd>F</kbd>. 
