@@ -6,191 +6,21 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="{{description}}">
     <title>{{title}}</title>
-    <style>
-        :root {
-          --dark-blue-1: #0E74BF;
-          --dark-blue-2: #2E94DF;
-          --light-blue-1: #5EA3EC;
-          --light-blue-2: #7EC3FF;
-
-          --black:  #222;
-          --light-black: #333;
-          --dark-gray: #6a6a6a;
-          --light-gray: #9a9a9a;
-          --dark-white: #e0e0e0;
-          --white:  #f7f7f7;
-        }
-
-        :root {
-          --background: var(--white);
-          --background-off: var(--dark-white);
-          --text: var(--light-black);
-          --text-off: var(--dark-gray);
-          --anchor: var(--dark-blue-1);
-          --anchor-hover: var(--dark-blue-2);
-        }
-
-        @media (prefers-color-scheme: dark) {
-          :root {
-            --background: var(--black);
-            --background-off: var(--light-black);
-            --text: var(--dark-white);
-            --text-off: var(--light-gray);
-            --anchor: var(--light-blue-1);
-            --anchor-hover: var(--light-blue-2);
-          }
-        }
-
-        html {
-          font-family: sans-serif;
-          font-size: 16px;
-          line-height: 1.5;
-        }
-
-        body {
-          background-color: var(--background);
-          color: var(--text);
-          max-width: 50rem;
-          margin: auto;
-          padding: 2rem;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-          margin: .5em 0;
-        }
-
-        h1 { font-size: 3.16rem; }
-        h2 { font-size: 2.37rem; }
-        h3 { font-size: 1.778rem; }
-        h4 { font-size: 1.333rem; }
-        h5 { font-size: 1rem; }
-        h6 { font-size: 0.75rem; }
-
-        a {
-          color: var(--anchor);
-          text-decoration: none;
-          transition: all .2s ease;
-        }
-
-        a:hover { color: var(--anchor-hover); }
-
-        [target="_blank"]::after {
-          content: "↗️";
-          display: inline-block;
-          font-size: .75rem;
-          height: 1rem;
-          margin-left: .25rem;
-          vertical-align: super;
-          width: 1rem;
-        }
-
-        code, pre {
-          background-color: var(--light-black);
-          border-radius: 4px;
-          color: var(--white);
-          font-family: monospace;
-          padding: 1rem;
-        }
-
-        code {
-          font-size: 0.9em;
-          padding: 0.1rem 0.25rem;
-        }
-
-        pre { overflow: auto; }
-
-        pre code { margin-left: -0.25rem; }
-
-        ul input[type="checkbox"], ol input[type="checkbox"], {
-          margin-left: -1rem;
-        }
-
-        blockquote {
-          color: var(--text-off);
-          font-style: italic;
-          line-height: 1.65;
-          padding: 0.25rem 0;
-          position: relative;
-        }
-
-        blockquote::before {
-          border-left: 3px solid var(--text-off);
-          content: '';
-          height: 100%;
-          left: -1.25rem;
-          position: absolute;
-          top: 0;
-        }
-
-        img {
-          display: block;
-          height: auto;
-          margin: auto;
-          max-width: 100%;
-        }
-
-        hr { color: var(--text-off); }
-
-        table, th, td {
-          border: 1px solid var(--text-off);
-          border-collapse: collapse;
-          padding: .5rem;
-        }
-
-        thead tr, tbody tr:nth-child(2n) { background-color: var(--background-off); }
-
-        footer { margin-top: 3rem; }
-
-        /* Fatfile */
-
-        #fatfile h1 { margin: 0; }
-
-        #fatfile article { padding: 1rem 1.5rem; }
-
-        #fatfile article:nth-child(2n+1) {
-          background-color: var(--background-off);
-          border-radius: 1rem;
-        }
-
-        /* Syntax Highlighting */
-
-        :root {
-          --red:    #ff6188;
-          --orange: #fc9867;
-          --yellow: #ffd866;
-          --green:  #a9dc76;
-          --blue:   #78dce8;
-          --purple: #ab9df2;
-        }
-
-        .k, .nd, .kd, .na {
-          color: var(--blue);
-        }
-        .nf, .nb, .nc, .k {
-          color: var(--green);
-        }
-        .c, .c1, .p, .si {
-          color: #aaa;
-        }
-        .n, .nv, .nx {
-          color: var(--orange);
-        }
-        .s, .s1, .s2 {
-          color: var(--yellow);
-        }
-        .mi, .kc, .mf {
-          color: var(--purple);
-        }
-        .k, .kn, .kt, .nt, .o, .sr {
-          color:  var(--red);
-        }
-    </style>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     {{content}}
 
     <footer>
-        <a href="index.html">Sitemap</a>
+        <nav>
+            <p><a href="index.html">Sitemap</a></p>
+            <p><a href="fatfile.html">Fatfile</a></p>
+        </nav>
+        <div class="social">
+            <p>Built using <a href="http://github.com/milofultz/swiki" target="_blank" rel="noopener noreferrer">{{SWIKI}}</a></p>
+            <p><a href="http://github.com/milofultz" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+            <p><a href="http://milofultz.com/" target="_blank" rel="noopener noreferrer">milofultz.com</a></p>
+        </div>
     </footer>
 </body>
 </html>

@@ -102,11 +102,15 @@ def make_wiki(pages_dir: str, output_dir: str):
     pages = defaultdict(dict)
 
     for subfolder, _, files in os.walk(pages_dir):
+        rel_path = subfolder.replace(pages_dir, '')
+        if rel_path and rel_path[0] == '_':
+            continue
         for file in files:
+            if file[0] == '_':
+                continue
             filename, extension = os.path.splitext(file)
             if extension != '.md':
                 continue
-            rel_path = subfolder.replace(pages_dir, '')
             page = make_page_dict(subfolder, file, rel_path)
             page_filename = links.kebabify(page['metadata'].get('title', filename))
             if page_filename in RESERVED:
