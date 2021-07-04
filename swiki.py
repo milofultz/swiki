@@ -23,10 +23,34 @@ argparser.add_argument('--no-fatfile', action='store_false', default=True, dest=
 args = argparser.parse_args()
 
 
+#############
+# Utilities #
+#############
+
+
 def delete_current_html(directory: str):
+    """ Delete all existing HTML files in directory """
     for file in os.listdir(directory):
         if os.path.splitext(file)[1] == '.html':
-            os.unlink(os.path.join(directory, file))
+            os.remove(os.path.join(directory, file))
+
+
+def place_in_container(element: str, html_id: str, content: str) -> str:
+    """ Place content in container with ID """
+    id_attr = f' id="{html_id}"' if html_id else ''
+    return f'<{element}{id_attr}>{content}</{element}>'
+
+
+def copy_css_file(pages_dir: str, output_dir: str):
+    """ If CSS file in _swiki directory, copy to output """
+    if os.path.isdir(swiki_folder := os.path.join(pages_dir, '_swiki')):
+        css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
+        shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
+
+
+################
+# Wiki Helpers #
+################
 
 
 def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = False) -> dict:
@@ -35,7 +59,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = Fal
     page['folder'] = rel_path
     with open(os.path.join(subfolder, file), 'r') as f:
         file_contents = f.read()
-        page['metadata'], page['content'] = frontmatter.parse(file_contents)
+    page['metadata'], page['content'] = frontmatter.parse(file_contents)
     if not page['metadata'].get('description'):
         page['metadata']['description'] = ''
     page['links'] = links.get_local(page.get('content'))
@@ -50,12 +74,6 @@ def add_page_to_sitemap(page_info: dict, folder: str, sitemap: defaultdict):
     updated_folder.append(page_info)
     sitemap[folder] = updated_folder
     return sitemap
-
-
-def place_in_container(element: str, html_id: str, content: str) -> str:
-    """ Place content in container with ID """
-    id_attr = f' id="{html_id}"' if html_id else ''
-    return f'<{element}{id_attr}>{content}</{element}>'
 
 
 def fill_frame(frame: str, content: str, metadata: dict) -> str:
@@ -112,12 +130,9 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
         f.write(filled_frame)
 
 
-def copy_css_file(pages_dir: str, output_dir: str):
-    """ If CSS file in _swiki directory, copy to output """
-    swiki_folder = os.path.join(pages_dir, '_swiki')
-    if os.path.isdir(swiki_folder):
-        css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
-        shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
+################
+# Wiki Builder #
+################
 
 
 def make_wiki(pages_dir: str, output_dir: str):
@@ -126,12 +141,12 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     for subfolder, _, files in os.walk(pages_dir):
         rel_path = subfolder.replace(pages_dir, '')
+        # Ignore all files with preceding underscore
         if rel_path and rel_path[0] == '_':
-            if rel_path == '_swiki' and 'index.md' in files:
-                pages['{{SITE INDEX}}'] = make_page_dict(subfolder, 'index.md', rel_path, True)
             continue
         for file in files:
             filename, extension = os.path.splitext(file)
+            # Ignore all files with preceding underscore or non-Markdown files
             if filename[0] == '_' or extension != '.md':
                 continue
             page = make_page_dict(subfolder, file, rel_path)
@@ -159,13 +174,21 @@ def make_wiki(pages_dir: str, output_dir: str):
             else:
                 pages[page_filename] = page
 
-    with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
+    swiki_dir = os.path.join(pages_dir, '_swiki')
+
+    # If there is an index file, build page dict
+    if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
+        pages['{{SITE INDEX}}'] = make_page_dict(swiki_dir, 'index.md', '_swiki', True)
+
+    # Load frame file
+    with open(os.path.join(swiki_dir, 'frame.html'), 'r') as f:
         frame = f.read()
         # Remove extra space in frame code
         frame = re.sub(r'(?<=\n)\s*', '', frame)
         frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
         frame = re.sub(re.compile(r'(?<=[;{}(*/)])[\s]*'), '', frame)
 
+    # Build all files and populate sitemap dict
     sitemap = defaultdict(dict)
     fatfile = ''
     index = {'metadata': dict()}
@@ -202,6 +225,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                                       # If no folder here, then it is a stub
                                       info.get('folder', '.stubs'),
                                       sitemap)
+
     if args.build_fatfile:
         make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
     make_sitemap(index, sitemap, frame, output_dir)
