@@ -29,7 +29,7 @@ def delete_current_html(directory: str):
             os.unlink(os.path.join(directory, file))
 
 
-def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
+def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = False) -> dict:
     """ Make dict of all page specific data """
     page = dict()
     page['folder'] = rel_path
@@ -39,7 +39,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
     if not page['metadata'].get('description'):
         page['metadata']['description'] = ''
     page['links'] = links.get_local(page.get('content'))
-    if rel_path == '_swiki' and file == 'index.md':
+    if isIndex:
         page['index'] = True
     return page
 
@@ -113,12 +113,11 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 
 
 def copy_css_file(pages_dir: str, output_dir: str):
-    """ If CSS file in input directory, copy to output """
+    """ If CSS file in _swiki directory, copy to output """
     swiki_folder = os.path.join(pages_dir, '_swiki')
-    if not os.path.isdir(swiki_folder):
-        return
-    css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
-    shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
+    if os.path.isdir(swiki_folder):
+        css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
+        shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
 
 
 def make_wiki(pages_dir: str, output_dir: str):
@@ -128,14 +127,12 @@ def make_wiki(pages_dir: str, output_dir: str):
     for subfolder, _, files in os.walk(pages_dir):
         rel_path = subfolder.replace(pages_dir, '')
         if rel_path and rel_path[0] == '_':
-            if rel_path == '_swiki' and os.path.isfile('index.md'):
-                make_page_dict(subfolder, 'index.md', rel_path)
+            if rel_path == '_swiki' and 'index.md' in files:
+                pages['{{SITE INDEX}}'] = make_page_dict(subfolder, 'index.md', rel_path, True)
             continue
         for file in files:
-            if file[0] == '_':
-                continue
             filename, extension = os.path.splitext(file)
-            if extension != '.md':
+            if filename[0] == '_' or extension != '.md':
                 continue
             page = make_page_dict(subfolder, file, rel_path)
             page_filename = links.kebabify(page['metadata'].get('title') or filename)
