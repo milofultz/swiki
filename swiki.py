@@ -39,7 +39,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str) -> dict:
     if not page['metadata'].get('description'):
         page['metadata']['description'] = ''
     page['links'] = links.get_local(page.get('content'))
-    if file == '.index.md':
+    if rel_path == '_swiki' and file == 'index.md':
         page['index'] = True
     return page
 
@@ -114,8 +114,11 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 
 def copy_css_file(pages_dir: str, output_dir: str):
     """ If CSS file in input directory, copy to output """
-    css_file = [file for file in os.listdir(pages_dir) if os.path.splitext(file)[1] == '.css'][0]
-    shutil.copy2(os.path.join(pages_dir, css_file), os.path.join(output_dir, css_file))
+    swiki_folder = os.path.join(pages_dir, '_swiki')
+    if not os.path.isdir(swiki_folder):
+        return
+    css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
+    shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
 
 
 def make_wiki(pages_dir: str, output_dir: str):
@@ -125,6 +128,8 @@ def make_wiki(pages_dir: str, output_dir: str):
     for subfolder, _, files in os.walk(pages_dir):
         rel_path = subfolder.replace(pages_dir, '')
         if rel_path and rel_path[0] == '_':
+            if rel_path == '_swiki' and os.path.isfile('index.md'):
+                make_page_dict(subfolder, 'index.md', rel_path)
             continue
         for file in files:
             if file[0] == '_':
@@ -157,7 +162,7 @@ def make_wiki(pages_dir: str, output_dir: str):
             else:
                 pages[page_filename] = page
 
-    with open(os.path.join(pages_dir, '.frame.html'), 'r') as f:
+    with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
         frame = f.read()
         # Remove extra space in frame code
         frame = re.sub(r'(?<=\n)\s*', '', frame)
