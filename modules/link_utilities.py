@@ -1,7 +1,7 @@
 import re
 
 re_wikilink = re.compile(r'{{.+?}}')
-re_external_link = re.compile(r'<a href=".+"')
+re_external_link = re.compile(r'<a href=".+?"')
 
 
 def get_local(content: str) -> list:
