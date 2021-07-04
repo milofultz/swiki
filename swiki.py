@@ -54,7 +54,8 @@ def add_page_to_sitemap(page_info: dict, folder: str, sitemap: defaultdict):
 
 def place_in_container(element: str, html_id: str, content: str) -> str:
     """ Place content in container with ID """
-    return f'<{element} id="{html_id}">{content}</{element}>'
+    id_attr = f' id="{html_id}"' if html_id else ''
+    return f'<{element}{id_attr}>{content}</{element}>'
 
 
 def fill_frame(frame: str, content: str, metadata: dict) -> str:
@@ -80,21 +81,32 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
     """ Make sitemap out of index and all seen pages """
     index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
     index_html += marko.convert(index.get('content', ''))
-    index_html = place_in_container('section', 'index', index_html)
-
     sitemap_html = ''
-    sorted_folders = sorted(sitemap.keys(), key=lambda folder: folder.lower())
-    for folder in sorted_folders:
+
+    def convert_folder_to_html(folder: str, display_name: str = None) -> str:
+        if not display_name:
+            display_name = folder if folder else "[root]"
+        html = ''
         sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
-        sitemap_html += f'<h2>{folder or "[root]"}</h2><ul>'
+        html += f'<h2>{display_name}</h2><ul>'
         for page in sorted_folder_list:
             title, filename = page.get('title'), page.get('filename')
-            sitemap_html += f'<li><a href="{filename}.html">{title}</a></li>'
-        sitemap_html += '</ul>'
-    sitemap_html = place_in_container('section', 'sitemap', sitemap_html)
+            html += f'<li><a href="{filename}.html">{title}</a></li>'
+        html += '</ul>'
+        html = place_in_container('div', '', html)
+        return html
+
+    sorted_folders = sorted(sitemap.keys(), key=lambda folder_name: folder_name.lower())
+    for folder in sorted_folders:
+        if folder == '.stubs':
+            continue
+        sitemap_html += convert_folder_to_html(folder)
+
+    if sitemap.get('.stubs'):
+        sitemap_html += '<hr>'
+        sitemap_html += convert_folder_to_html('.stubs', 'Wiki Stubs')
 
     page_html = place_in_container('main', 'main', index_html + sitemap_html)
-
     filled_frame = fill_frame(frame, page_html, index.get('metadata', dict()))
     with open(os.path.join(output_dir, 'index.html'), 'w') as f:
         f.write(filled_frame)
@@ -185,7 +197,8 @@ def make_wiki(pages_dir: str, output_dir: str):
             f.write(filled_frame)
 
         sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
-                                      info.get('folder', ''),
+                                      # If no folder here, then it is a stub
+                                      info.get('folder', '.stubs'),
                                       sitemap)
     if args.build_fatfile:
         make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
