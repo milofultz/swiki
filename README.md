@@ -9,7 +9,7 @@ Make a wiki with backlinking from Markdown fast.
 
 ## Usage
 
-The Swiki takes in any folder of markdown files and a `.frame.html` file to build a flat-file wiki system. Here's what you'll need:
+The Swiki takes in any folder of markdown files and a `frame.html` file to build a flat-file wiki system. Here's what you'll need:
 
 ### `_swiki` Directory
 
