@@ -104,6 +104,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
     def convert_folder_to_html(folder: str, display_name: str = None) -> str:
         if not display_name:
             display_name = folder if folder else "[root]"
+        display_name = display_name.replace('/', '/<wbr/>')
         html = ''
         sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
         html += f'<h2>{display_name}</h2><ul>'
@@ -121,7 +122,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
         sitemap_html += convert_folder_to_html(folder)
 
     if sitemap.get('.stubs'):
-        sitemap_html += '<hr>'
+        sitemap_html += '<hr/>'
         sitemap_html += convert_folder_to_html('.stubs', 'Wiki Stubs')
 
     page_html = place_in_container('main', 'main', index_html + sitemap_html)
