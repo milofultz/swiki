@@ -97,8 +97,6 @@ Flag | Effect
 
 #### Example
 
-
-
 ```markdown
 ---
 title: Rendering A Page
