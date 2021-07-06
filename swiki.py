@@ -258,7 +258,8 @@ if __name__ == "__main__":
         os.mkdir(args.output_dir)
     if args.delete_current_html:
         delete_current_html(args.output_dir)
-    if config_fp := os.path.join(args.input_dir, '_swiki', 'config.ini'):
+    config_fp = os.path.join(args.input_dir, '_swiki', 'config.ini')
+    if os.path.isfile(config_fp):
         update_config(config_fp)
 
     make_wiki(args.input_dir, args.output_dir)
