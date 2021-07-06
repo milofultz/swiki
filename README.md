@@ -11,11 +11,26 @@ Make a wiki with backlinking from Markdown fast.
 
 The Swiki takes in any folder of markdown files and a `frame.html` file to build a flat-file wiki system. Here's what you'll need:
 
+### Pages
+
+The necessary format for your pages are [Markdown](https://spec.commonmark.org/0.29/) files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/).
+
+* The front matter currently uses the `title` and `description` fields. Note that these are case sensitive.
+* Wiki-style links use `{{double curly braces}}` and are case insensitive. They can be made two ways (note that they reference the *title* in the front matter, not the *filename*):
+    * `{{example}}` - Displays the text 'example' and goes to the page whose title is 'example'.
+    * `{{shown text|example}}` - Displays the text 'shown text' and goes to the page whose title is 'example'.
+
 ### `_swiki` Directory
 
 Create a directory named `_swiki` in your input directory. This is where you will put the following files.
 
-### Frame
+    _swiki
+     |- frame.html
+     |- styles.css
+     |- index.md
+     \- config.ini
+
+#### Frame
 
 A `frame.html` file in the `_swiki` directory with all of your markdown files. This accepts `{{title}}`, `{{description}}`, and `{{content}}` tags, to fill in the title and description from the page's front matter and the content of the page. A sitemap will also be rendered at `index.html`, so you can link to that, too.
 
@@ -50,7 +65,7 @@ A `frame.html` file in the `_swiki` directory with all of your markdown files. T
 
 Instead of using a `<style>` tag in your frame file for styling, you can also link in a CSS file. If you include a CSS file in the `_swiki` folder, it will be copied over to the root of your output folder. For instance, if you had a file named `styles.css` in your `_swiki` folder, you could replace your `<style>...</style>` tags with a `<link rel="stylesheet" href="./styles.css">`.
 
-### Index/Sitemap
+#### Index/Sitemap
 
 By default, `index.html` will be rendered in your wiki with a title of "Sitemap". The sitemap is organized by the structure of your markdown pages and which folders they reside in (e.g. a file in the root folder will be in a different section than a file in a subfolder). Any page that is linked to but does not yet exist will be in its own section at the bottom of the sitemap as a "stub".
 
@@ -65,22 +80,16 @@ description: This will become the meta description.
 This will be prepended to the sitemap/index of your wiki.
 ```
 
-### Fatfile
+#### Config File
 
-A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching and stumbling on new content. 
+A `config.ini` file can be used to overwrite certain parser parameters. For example:
 
-### Pages
+    KeyOne = Value
+    KeyTwo = 123
 
-The necessary format for your pages are [Markdown](https://spec.commonmark.org/0.29/) files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/).
-
-* The front matter currently uses the `title` and `description` fields. Note that these are case sensitive.
-* Wiki-style links use `{{double curly braces}}` and are case insensitive. They can be made two ways (note that they reference the *title* in the front matter, not the *filename*):
-    * `{{example}}` - Displays the text 'example' and goes to the page whose title is 'example'.
-    * `{{shown text|example}}` - Displays the text 'shown text' and goes to the page whose title is 'example'.
-
-#### Ignoring Files and Folders
-
-Any files or folders with a preceding underscore will be ignored in the rendering process.
+Key | Effect | Default Value
+--- | --- | ---
+`TabSize` | How many spaces a tab character wil be converted to when parsing the page content| 2
 
 ### Rendering
 
@@ -94,6 +103,14 @@ Flag | Effect
 --- | ---
 --delete-current-html | Non-recursively delete all existing HTML files in the build directory
 --no-fatfile | Do not create [fatfile](#fatfile) on build 
+
+### Fatfile
+
+A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching and stumbling on new content. 
+
+### Ignoring Files and Folders
+
+Any files or folders with a preceding underscore will be ignored in the rendering process.
 
 #### Example
 
