@@ -12,6 +12,9 @@ import modules.link_utilities as links
 
 
 RESERVED = ['index', 'fatfile']
+# All default values of config file
+CONFIG = {'TabSize': 2}
+
 marko = Markdown(extensions=['codehilite', 'gfm'])
 
 
@@ -26,6 +29,19 @@ args = argparser.parse_args()
 #############
 # Utilities #
 #############
+
+
+def update_config(fp: str):
+    """ Update default config with any user values """
+    with open(fp, 'r') as f:
+        config_file = f.read()
+    for line in config_file.split('\n'):
+        if line == '':
+            continue
+        key, value = line.split('=', 1)
+        key, value = key.strip(), value.strip()
+        # Cast the config value to the type that's in the default
+        CONFIG[key] = type(CONFIG.get(key, 'string'))(value)
 
 
 def delete_current_html(directory: str):
@@ -62,6 +78,8 @@ def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = Fal
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
     if not page['metadata'].get('description'):
         page['metadata']['description'] = ''
+    tab_spaces = ' ' * CONFIG.get('TabSize')
+    page['content'] = page.get('content').replace('\t', tab_spaces)
     page['links'] = links.get_local(page.get('content'))
     if isIndex:
         page['index'] = True
@@ -240,5 +258,7 @@ if __name__ == "__main__":
         os.mkdir(args.output_dir)
     if args.delete_current_html:
         delete_current_html(args.output_dir)
+    if config_fp := os.path.join(args.input_dir, '_swiki', 'config.ini'):
+        update_config(config_fp)
 
     make_wiki(args.input_dir, args.output_dir)
