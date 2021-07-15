@@ -21,8 +21,8 @@ marko = Markdown(extensions=['codehilite', 'gfm'])
 argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
 argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
 argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
-argparser.add_argument('--delete-current-html', action='store_true', help='delete all HTML in output directory before building')
-argparser.add_argument('--no-fatfile', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
+argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
+argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
 args = argparser.parse_args()
 
 
@@ -140,7 +140,6 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
         sitemap_html += convert_folder_to_html(folder)
 
     if sitemap.get('.stubs'):
-        sitemap_html += '<hr/>'
         sitemap_html += convert_folder_to_html('.stubs', 'Wiki Stubs')
 
     page_html = place_in_container('main', 'main', index_html + sitemap_html)

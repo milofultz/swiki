@@ -103,12 +103,12 @@ python3 swiki.py input_folder output_folder [flags]
 
 Flag | Effect
 --- | ---
---delete-current-html | Non-recursively delete all existing HTML files in the build directory
---no-fatfile | Do not create [fatfile](#fatfile) on build 
+--delete-current-html, -d | Non-recursively delete all existing HTML files in the build directory
+--no-fatfile, -nf | Do not create [fatfile](#fatfile) on build
 
 ### Fatfile
 
-A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching and stumbling on new content. 
+A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching and stumbling on new content.
 
 ### Ignoring Files and Folders
 
