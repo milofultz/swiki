@@ -1,6 +1,6 @@
 # {{SWIKI}}
 
-Make a wiki with backlinking from Markdown fast.
+Make a wiki with backlinking from [Markdown][] fast.
 
 ## Installation
 
@@ -13,7 +13,7 @@ The Swiki takes in any folder of markdown files and a `frame.html` file to build
 
 ### Pages
 
-The necessary format for your pages are [Markdown](https://spec.commonmark.org/0.29/) files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/).
+The necessary format for your pages are [Markdown][] files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/).
 
 * The front matter currently uses the `title` and `description` fields. Note that these are case sensitive.
 * Wiki-style links use `{{double curly braces}}` and are case insensitive. They can be made two ways (note that they reference the *title* in the front matter, not the *filename*):
@@ -33,6 +33,8 @@ Create a directory named `_swiki` in your input directory. This is where you wil
 #### Frame
 
 A `frame.html` file in the `_swiki` directory with all of your markdown files. This accepts `{{title}}`, `{{description}}`, and `{{content}}` tags, to fill in the title and description from the page's front matter and the content of the page. A sitemap will also be rendered at `index.html`, so you can link to that, too.
+
+Here is an example that includes basic CSS to make a generally good looking and easy to read webpage.
 
 ```html
 <!doctype html>
@@ -134,3 +136,5 @@ This would render out five files, all using the frame:
 ## Future Improvements
 
 - Handle special characters in links and in backlinks. E.g. `{{async/await}}` throws because it resolves to `href="async/await.html"`. Replace `/` with something else, like `:`? Also when a paren etc. is in the title, it just uses that. Should replace with something like the colon.
+
+[Markdown]: https://spec.commonmark.org/0.29/
