@@ -4,6 +4,8 @@ import os
 import re
 import shutil
 import sys
+from textwrap import dedent
+import time
 
 from marko import Markdown
 import frontmatter
@@ -69,13 +71,20 @@ def copy_css_file(pages_dir: str, output_dir: str):
 ################
 
 
+def add_last_modified(content: str, lm_text: str) -> str:
+    return f'{content}\n<p class="last-modified"><em>Last modified: {lm_text}</em></p>'
+
+
 def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = False) -> dict:
     """ Make dict of all page specific data """
     page = dict()
     page['folder'] = rel_path
-    with open(os.path.join(subfolder, file), 'r') as f:
+    fp = os.path.join(subfolder, file)
+    with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
+    last_modified = time.gmtime(os.path.getmtime(fp))
+    page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
     if not page['metadata'].get('description'):
         page['metadata']['description'] = ''
     tab_spaces = ' ' * CONFIG.get('TabSize')
@@ -194,6 +203,7 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     swiki_dir = os.path.join(pages_dir, '_swiki')
 
+
     # If there is an index file, build page dict
     if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
         pages['{{SITE INDEX}}'] = make_page_dict(swiki_dir, 'index.md', '_swiki', True)
@@ -219,12 +229,18 @@ def make_wiki(pages_dir: str, output_dir: str):
         if not info.get('metadata'):
             info['metadata'] = dict()
         info['metadata'] = {'title': info['metadata'].get('title', page),
-                            'description': info['metadata'].get('description', '')}
+                            'description': info['metadata'].get('description', ''),
+                            'last_modified': info['metadata'].get('last_modified', '')}
+
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = f'<h1 id="title">{info["metadata"].get("title")}</h1>\n{content}'
+        content = dedent(f'''\
+            <h1 id="title">{info["metadata"].get("title")}</h1>\n\
+            {content}''')
         content = links.add_external(content)
         content = links.add_local(content)
         content = links.add_backlinks(content, info.get('backlinks', []))
+        if info.get('last_modified') != '':
+            content = add_last_modified(content, info['metadata'].get('last_modified'))
 
         if args.build_fatfile:
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
