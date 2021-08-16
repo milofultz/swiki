@@ -166,6 +166,10 @@ def make_wiki(pages_dir: str, output_dir: str):
     """ Create flat wiki out of all pages """
     pages = defaultdict(dict)
 
+    ff_bytes = 0
+    with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
+        frame_bytes = len(f.read().encode('utf-8'))
+
     for subfolder, _, files in os.walk(pages_dir):
         rel_path = subfolder.replace(pages_dir, '').lstrip('/')
         # Ignore all files with preceding underscore
@@ -180,6 +184,8 @@ def make_wiki(pages_dir: str, output_dir: str):
             page_filename = links.kebabify(page['metadata'].get('title') or filename)
             if page_filename in RESERVED:
                 page_filename += '_'
+
+            ff_bytes += len(page.get('content', '').encode('utf-8')) + frame_bytes
 
             # add backlinks to all pages this page links to
             for link in page['links']:
@@ -215,6 +221,12 @@ def make_wiki(pages_dir: str, output_dir: str):
         frame = re.sub(r'(?<=\n)\s*', '', frame)
         frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
         frame = re.sub(re.compile(r'(?<=[;{}(*/)])[\s]*'), '', frame)
+        ff_bytes *= 1.7  # roughly correct at least for my purposes
+        if ff_bytes < 1_000_000:
+            ff_size = f"~{int(ff_bytes // 1_000)}kb"
+        else:
+            ff_size = f"~{round(ff_bytes / 1_000_000, 2)}mb"
+        frame = frame.replace('{{ff_size}}', ff_size)
 
     # Build all files and populate sitemap dict
     sitemap = defaultdict(dict)

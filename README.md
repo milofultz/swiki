@@ -34,6 +34,13 @@ Create a directory named `_swiki` in your input directory. This is where you wil
 
 A `frame.html` file in the `_swiki` directory with all of your markdown files. This accepts `{{title}}`, `{{description}}`, and `{{content}}` tags, to fill in the title and description from the page's front matter and the content of the page. A sitemap will also be rendered at `index.html`, so you can link to that, too.
 
+Tags | Description
+--- | ---
+`{{title}}` | Title described in the front matter of your index.md file
+`{{description}}` | Description described in the front matter of your index.md file
+`{{content}}` | The content within your index.md file
+`{{ff_size}}` | Use this to let users know the download size in kb (or mb if real big) of a potentially unwieldy fatfile
+
 Here is an example that includes basic CSS to make a generally good looking and easy to read webpage.
 
 ```html
@@ -58,6 +65,7 @@ Here is an example that includes basic CSS to make a generally good looking and 
 
     <footer>
         <a href="index.html">Sitemap</a>
+        <a href="fatfile.html">Fatfile ({{ff_size}})</a>
     </footer>
 </body>
 </html>
