@@ -17,7 +17,8 @@ RESERVED = ['index', 'fatfile']
 # All default values of config file
 CONFIG = {'TabSize': 2}
 
-marko = Markdown(extensions=['codehilite', 'gfm'])
+# marko = Markdown(extensions=['codehilite', 'gfm'])
+marko = Markdown(extensions=['gfm'])
 
 
 argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
