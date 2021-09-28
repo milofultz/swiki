@@ -2,6 +2,7 @@ import re
 
 re_wikilink = re.compile(r'{{.+?}}')
 re_external_link = re.compile(r'<a href=".+?"')
+re_special_characters = re.compile(r'[/()]')
 
 
 def get_local(content: str) -> list:
@@ -52,4 +53,5 @@ def add_backlinks(content: str, backlinks: list) -> str:
 
 def kebabify(text: str) -> str:
     """ Format text to filename kebab-case """
+    text = re_special_characters.sub('', text)
     return text.replace(' ', '-').lower()

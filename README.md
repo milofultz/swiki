@@ -143,6 +143,6 @@ This would render out five files, all using the frame:
 
 ## Future Improvements
 
-- Handle special characters in links and in backlinks. E.g. `{{async/await}}` throws because it resolves to `href="async/await.html"`. Replace `/` with something else, like `:`? Also when a paren etc. is in the title, it just uses that. Should replace with something like the colon.
+- Add tags for categorical linking by meta ideas, like "#activities", etc.  
 
 [Markdown]: https://spec.commonmark.org/0.29/
