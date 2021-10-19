@@ -248,8 +248,7 @@ def make_wiki(pages_dir: str, output_dir: str):
         content = links.add_external(content)
         content = links.add_local(content)
         content = links.add_backlinks(content, info.get('backlinks', []))
-        if info.get('last_modified') != '':
-            content = add_last_modified(content, info['metadata'].get('last_modified'))
+        content = add_last_modified(content, info['metadata'].get('last_modified'))
 
         if args.build_fatfile:
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
