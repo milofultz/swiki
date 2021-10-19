@@ -117,6 +117,10 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         element = swiki.place_in_container('p', None, 'No ID :O')
         self.assertEqual(element, '<p>No ID :O</p>')
 
+    def test_add_last_modified(self):
+        html = swiki.add_last_modified('preceding content', 'lm_text')
+        self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
+
     def tearDown(self) -> None:
         shutil.rmtree(self.test_path)
 

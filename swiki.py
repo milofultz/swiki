@@ -68,7 +68,7 @@ def copy_css_file(pages_dir: str, output_dir: str):
 
 
 def add_last_modified(content: str, lm_text: str) -> str:
-    return f'{content}\n<p class="last-modified"><em>Last modified: {lm_text}</em></p>'
+    return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
 
 
 def make_page_dict(subfolder: str, file: str, rel_path: str, is_index: bool = False) -> dict:
