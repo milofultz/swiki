@@ -21,20 +21,12 @@ CONFIG = {'TabSize': 2}
 marko = Markdown(extensions=['gfm'])
 
 
-argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
-argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
-argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
-argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
-argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
-args = argparser.parse_args()
-
-
 #############
 # Utilities #
 #############
 
 
-def update_config(fp: str):
+def update_config(config: dict, fp: str):
     """ Update default config with any user values """
     with open(fp, 'r') as f:
         config_file = f.read()
@@ -44,7 +36,7 @@ def update_config(fp: str):
         key, value = line.split('=', 1)
         key, value = key.strip(), value.strip()
         # Cast the config value to the type that's in the default
-        CONFIG[key] = type(CONFIG.get(key, 'string'))(value)
+        config[key] = type(config.get(key, 'string'))(value)
 
 
 def delete_current_html(directory: str):
@@ -54,17 +46,14 @@ def delete_current_html(directory: str):
             os.remove(os.path.join(directory, file))
 
 
-def place_in_container(element: str, html_id: str, content: str) -> str:
-    """ Place content in container with ID """
-    id_attr = f' id="{html_id}"' if html_id else ''
-    return f'<{element}{id_attr}>{content}</{element}>'
-
-
 def copy_css_file(pages_dir: str, output_dir: str):
     """ If CSS file in _swiki directory, copy to output """
-    if os.path.isdir(swiki_folder := os.path.join(pages_dir, '_swiki')):
-        css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
-        shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
+    swiki_folder = os.path.join(pages_dir, '_swiki')
+    if not os.path.isdir(swiki_folder):
+        return
+    for file in os.listdir(swiki_folder):
+        if os.path.splitext(file)[1] == '.css':
+            shutil.copy2(os.path.join(swiki_folder, file), os.path.join(output_dir, file))
 
 
 ################
@@ -72,13 +61,19 @@ def copy_css_file(pages_dir: str, output_dir: str):
 ################
 
 
+def place_in_container(element: str, html_id: str or None, content: str) -> str:
+    """ Place content in container with ID """
+    id_attr = f' id="{html_id}"' if html_id else ''
+    return f'<{element}{id_attr}>{content}</{element}>'
+
+
 def add_last_modified(content: str, lm_text: str) -> str:
     if not lm_text:
         return content
-    return f'{content}\n<p class="last-modified"><em>Last modified: {lm_text}</em></p>'
+    return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
 
 
-def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = False) -> dict:
+def make_page_dict(subfolder: str, file: str, rel_path: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
     page = dict()
     page['folder'] = rel_path
@@ -93,7 +88,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = Fal
     tab_spaces = ' ' * CONFIG.get('TabSize')
     page['content'] = page.get('content').replace('\t', tab_spaces)
     page['links'] = links.get_local(page.get('content'))
-    if isIndex:
+    if is_index:
         page['index'] = True
     return page
 
@@ -142,7 +137,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
             title, filename = page.get('title'), page.get('filename')
             html += f'<li><a href="{filename}.html">{title}</a></li>'
         html += '</ul></details>'
-        html = place_in_container('div', '', html)
+        html = place_in_container('div', None, html)
         return html
 
     sorted_folders = sorted(sitemap.keys(), key=lambda folder_name: folder_name.lower())
@@ -212,7 +207,6 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     swiki_dir = os.path.join(pages_dir, '_swiki')
 
-
     # If there is an index file, build page dict
     if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
         pages['{{SITE INDEX}}'] = make_page_dict(swiki_dir, 'index.md', '_swiki', True)
@@ -254,14 +248,13 @@ def make_wiki(pages_dir: str, output_dir: str):
         content = links.add_external(content)
         content = links.add_local(content)
         content = links.add_backlinks(content, info.get('backlinks', []))
-        if info.get('last_modified') != '':
-            content = add_last_modified(content, info['metadata'].get('last_modified'))
+        content = add_last_modified(content, info['metadata'].get('last_modified'))
 
-        if args.build_fatfile:
+        if config.get('build_fatfile'):
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
                                      f'<a href="{page}.html">{info["metadata"].get("title")}</a>',
                                      content)
-            fatfile += place_in_container('article', '', fatfile_content)
+            fatfile += place_in_container('article', None, fatfile_content)
 
         content = place_in_container('article', 'content', content)
         content = place_in_container('main', 'main', content)
@@ -275,21 +268,33 @@ def make_wiki(pages_dir: str, output_dir: str):
                                       info.get('folder', '.stubs'),
                                       sitemap)
 
-    if args.build_fatfile:
+    if config.get('build_fatfile'):
         make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
     make_sitemap(index, sitemap, frame, output_dir)
     copy_css_file(pages_dir, output_dir)
 
 
 if __name__ == "__main__":
+    argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
+    argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
+    argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
+    argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
+    argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
+    args = argparser.parse_args()
+
     if not os.path.isdir(args.input_dir):
         sys.exit(f'Input folder not found: {args.input_dir}')
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
     if args.delete_current_html:
         delete_current_html(args.output_dir)
+
+    config = {
+        'TabSize': 2,
+        'build_fatfile': args.build_fatfile
+    }
     config_fp = os.path.join(args.input_dir, '_swiki', 'config.ini')
     if os.path.isfile(config_fp):
-        update_config(config_fp)
+        update_config(CONFIG, config_fp)
 
     make_wiki(args.input_dir, args.output_dir)
