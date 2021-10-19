@@ -109,6 +109,14 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         os.rmdir(test_swiki)
         os.rmdir(test_output)
 
+    def test_place_in_container(self):
+        element = swiki.place_in_container('p', 'test', 'Inner text!')
+        self.assertEqual(element, '<p id="test">Inner text!</p>')
+
+    def test_place_in_container_if_no_id(self):
+        element = swiki.place_in_container('p', None, 'No ID :O')
+        self.assertEqual(element, '<p>No ID :O</p>')
+
     def tearDown(self) -> None:
         shutil.rmtree(self.test_path)
 

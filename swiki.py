@@ -46,7 +46,7 @@ def delete_current_html(directory: str):
             os.remove(os.path.join(directory, file))
 
 
-def place_in_container(element: str, html_id: str, content: str) -> str:
+def place_in_container(element: str, html_id: str or None, content: str) -> str:
     """ Place content in container with ID """
     id_attr = f' id="{html_id}"' if html_id else ''
     return f'<{element}{id_attr}>{content}</{element}>'
@@ -135,7 +135,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
             title, filename = page.get('title'), page.get('filename')
             html += f'<li><a href="{filename}.html">{title}</a></li>'
         html += '</ul>'
-        html = place_in_container('div', '', html)
+        html = place_in_container('div', None, html)
         return html
 
     sorted_folders = sorted(sitemap.keys(), key=lambda folder_name: folder_name.lower())
@@ -253,7 +253,7 @@ def make_wiki(pages_dir: str, output_dir: str):
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
                                      f'<a href="{page}.html">{info["metadata"].get("title")}</a>',
                                      content)
-            fatfile += place_in_container('article', '', fatfile_content)
+            fatfile += place_in_container('article', None, fatfile_content)
 
         content = place_in_container('article', 'content', content)
         content = place_in_container('main', 'main', content)
