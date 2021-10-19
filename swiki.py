@@ -21,14 +21,6 @@ CONFIG = {'TabSize': 2}
 marko = Markdown(extensions=['gfm'])
 
 
-argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
-argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
-argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
-argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
-argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
-args = argparser.parse_args()
-
-
 #############
 # Utilities #
 #############
@@ -280,6 +272,13 @@ def make_wiki(pages_dir: str, output_dir: str):
 
 
 if __name__ == "__main__":
+    argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
+    argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
+    argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
+    argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
+    argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
+    args = argparser.parse_args()
+
     if not os.path.isdir(args.input_dir):
         sys.exit(f'Input folder not found: {args.input_dir}')
     if not os.path.isdir(args.output_dir):
