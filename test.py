@@ -109,6 +109,11 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         os.rmdir(test_swiki)
         os.rmdir(test_output)
 
+    def tearDown(self) -> None:
+        shutil.rmtree(self.test_path)
+
+
+class WikiHelpersTestCase(unittest.TestCase):
     def test_place_in_container(self):
         element = swiki.place_in_container('p', 'test', 'Inner text!')
         self.assertEqual(element, '<p id="test">Inner text!</p>')
@@ -120,9 +125,6 @@ class BuildUtilitiesTestCase(unittest.TestCase):
     def test_add_last_modified(self):
         html = swiki.add_last_modified('preceding content', 'lm_text')
         self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
-
-    def tearDown(self) -> None:
-        shutil.rmtree(self.test_path)
 
 
 if __name__ == '__main__':

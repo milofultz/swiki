@@ -46,12 +46,6 @@ def delete_current_html(directory: str):
             os.remove(os.path.join(directory, file))
 
 
-def place_in_container(element: str, html_id: str or None, content: str) -> str:
-    """ Place content in container with ID """
-    id_attr = f' id="{html_id}"' if html_id else ''
-    return f'<{element}{id_attr}>{content}</{element}>'
-
-
 def copy_css_file(pages_dir: str, output_dir: str):
     """ If CSS file in _swiki directory, copy to output """
     swiki_folder = os.path.join(pages_dir, '_swiki')
@@ -65,6 +59,12 @@ def copy_css_file(pages_dir: str, output_dir: str):
 ################
 # Wiki Helpers #
 ################
+
+
+def place_in_container(element: str, html_id: str or None, content: str) -> str:
+    """ Place content in container with ID """
+    id_attr = f' id="{html_id}"' if html_id else ''
+    return f'<{element}{id_attr}>{content}</{element}>'
 
 
 def add_last_modified(content: str, lm_text: str) -> str:
