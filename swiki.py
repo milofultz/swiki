@@ -68,6 +68,8 @@ def place_in_container(element: str, html_id: str or None, content: str) -> str:
 
 
 def add_last_modified(content: str, lm_text: str) -> str:
+    if not lm_text:
+        return content
     return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
 
 
@@ -130,11 +132,11 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
         display_name = display_name.replace('/', '/<wbr/>')
         html = ''
         sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
-        html += f'<h2>{display_name}</h2><ul>'
+        html += f'<details><summary>{display_name}</summary><ul>'
         for page in sorted_folder_list:
             title, filename = page.get('title'), page.get('filename')
             html += f'<li><a href="{filename}.html">{title}</a></li>'
-        html += '</ul>'
+        html += '</ul></details>'
         html = place_in_container('div', None, html)
         return html
 
