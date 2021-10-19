@@ -25,10 +25,10 @@ The necessary format for your pages are [Markdown][] files with [YAML/Jekyll fro
 Create a directory named `_swiki` in your input directory. This is where you will put the following files.
 
     _swiki
-     |- frame.html
-     |- styles.css
-     |- index.md
-     \- config.ini
+     ├- frame.html
+     ├- styles.css
+     ├- index.md
+     └- config.ini
 
 #### Frame
 
@@ -143,6 +143,8 @@ This would render out five files, all using the frame:
 
 ## Future Improvements
 
-- Add tags for categorical linking by meta ideas, like "#activities", etc.  
+- Handle multiple pages with the same title. Show error that two pages cannot have the same title and one **will** be overridden. Don't let it fail silently!
+- Add tags for categorical linking by meta ideas, like "#activities", etc.
+- Add a test suite using `unittest`
 
 [Markdown]: https://spec.commonmark.org/0.29/
