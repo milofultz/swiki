@@ -73,6 +73,8 @@ def copy_css_file(pages_dir: str, output_dir: str):
 
 
 def add_last_modified(content: str, lm_text: str) -> str:
+    if not lm_text:
+        return content
     return f'{content}\n<p class="last-modified"><em>Last modified: {lm_text}</em></p>'
 
 
