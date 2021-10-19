@@ -1,5 +1,7 @@
 import os
 import shutil
+from textwrap import dedent
+import time
 import unittest
 
 import swiki
@@ -14,8 +16,6 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class InitTestCase(unittest.TestCase):
-    """ Tests program initialization variations """
-
     def setUp(self):
         self.test_path = os.path.join(current_dir, '__delete_test')
         if os.path.isdir(self.test_path):
@@ -83,8 +83,6 @@ class InitTestCase(unittest.TestCase):
 
 
 class BuildUtilitiesTestCase(unittest.TestCase):
-    """ Tests build utilities """
-
     def setUp(self) -> None:
         self.test_path = os.path.join(current_dir, '__delete_test')
         if os.path.isdir(self.test_path):
@@ -142,6 +140,159 @@ class WikiHelpersTestCase(unittest.TestCase):
     def test_add_last_modified(self):
         html = swiki.add_last_modified('preceding content', 'lm_text')
         self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
+
+    def test_detab(self):
+        # Assumes config default is 2 spaces per tab
+        content = 'Yeah\tthings!'
+        self.assertEqual(swiki.detab(content), 'Yeah  things!')
+
+
+class MakePageDictTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.test_path = os.path.join(current_dir, '__delete_test')
+        if os.path.isdir(self.test_path):
+            shutil.rmtree(self.test_path)
+        os.makedirs(self.test_path)
+
+        self.test_input_path = os.path.join(self.test_path, 'input')
+        self.test_page_filename = 'test-page.md'
+        os.makedirs(os.path.join(self.test_input_path, 'sub'))
+        self.test_page_fp = os.path.join(self.test_input_path, 'sub', self.test_page_filename)
+        self.test_page_lm = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
+
+    def test_make_page_dict_basic(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The content""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(os.path.join(self.test_input_path, 'sub'), self.test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': self.test_page_lm,
+            },
+            'content': 'The content',
+            'links': [],
+            'index': False
+        })
+
+    def test_make_page_dict_no_desc(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            ---
+            
+            The content""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': '',
+                'last_modified': self.test_page_lm,
+            },
+            'content': 'The content',
+            'links': [],
+            'index': False
+        })
+
+    def test_make_page_dict_link(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The {{content}}""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': self.test_page_lm,
+            },
+            'content': 'The {{content}}',
+            'links': ['content'],
+            'index': False
+        })
+
+    def test_make_page_dict_multiple_links(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The {{content}} and then...
+            
+            {{another}}!""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': self.test_page_lm,
+            },
+            'content': 'The {{content}} and then...\n\n{{another}}!',
+            'links': ['content', 'another'],
+            'index': False
+        })
+
+    def test_make_page_dict_index(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The content""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub', True)
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': self.test_page_lm,
+            },
+            'content': 'The content',
+            'links': [],
+            'index': True
+        })
+
+    def tearDown(self):
+        shutil.rmtree(self.test_path)
 
 
 if __name__ == '__main__':

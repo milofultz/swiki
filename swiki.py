@@ -73,23 +73,23 @@ def add_last_modified(content: str, lm_text: str) -> str:
     return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
 
 
-def make_page_dict(subfolder: str, file: str, rel_path: str, is_index: bool = False) -> dict:
+def detab(content: str) -> str:
+    tab_spaces = ' ' * CONFIG.get('TabSize')
+    return content.replace('\t', tab_spaces)
+
+
+def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
-    page = dict()
-    page['folder'] = rel_path
-    fp = os.path.join(subfolder, file)
+    page = {'folder': rel_path}
+    fp = os.path.join(root, rel_path, file)
     with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
+    page['metadata']['description'] = page['metadata'].get('description', '')
     last_modified = time.gmtime(os.path.getmtime(fp))
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
-    if not page['metadata'].get('description'):
-        page['metadata']['description'] = ''
-    tab_spaces = ' ' * CONFIG.get('TabSize')
-    page['content'] = page.get('content').replace('\t', tab_spaces)
     page['links'] = links.get_local(page.get('content'))
-    if is_index:
-        page['index'] = True
+    page['index'] = True if is_index else False
     return page
 
 
@@ -178,7 +178,7 @@ def make_wiki(pages_dir: str, output_dir: str):
             # Ignore all files with preceding underscore or non-Markdown files
             if filename[0] == '_' or extension != '.md':
                 continue
-            page = make_page_dict(subfolder, file, rel_path)
+            page = make_page_dict(pages_dir, file, rel_path)
             page_filename = links.kebabify(page['metadata'].get('title') or filename)
             if page_filename in RESERVED:
                 page_filename += '_'
@@ -242,6 +242,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                             'last_modified': info['metadata'].get('last_modified', '')}
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
+        content = detab(content)
         content = dedent(f'''\
             <h1 id="title">{info["metadata"].get("title")}</h1>\n\
             {content}''')
