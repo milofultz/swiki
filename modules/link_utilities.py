@@ -38,7 +38,7 @@ def add_backlinks(content: str, backlinks: list) -> str:
     """ Add backlinks section to content """
     if not backlinks:
         return content
-    backlinks_html = '<section id="backlinks"><h2>Backlinks:</h2><ul>'
+    backlinks_html = '<section id="backlinks"><details><summary>Backlinks</summary><ul>'
     seen_backlinks = set()
     backlinks = sorted(backlinks, key=lambda backlink: str.lower(backlink.get('title')))
     for backlink in backlinks:
@@ -47,7 +47,7 @@ def add_backlinks(content: str, backlinks: list) -> str:
             continue
         seen_backlinks.add(title)
         backlinks_html += f'<li><a href="{filename}.html">{title}</a></li>'
-    backlinks_html += '</ul></section>'
+    backlinks_html += '</ul></details></section>'
     return content + backlinks_html
 
 

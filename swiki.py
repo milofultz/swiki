@@ -135,11 +135,11 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
         display_name = display_name.replace('/', '/<wbr/>')
         html = ''
         sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
-        html += f'<h2>{display_name}</h2><ul>'
+        html += f'<details><summary>{display_name}</summary><ul>'
         for page in sorted_folder_list:
             title, filename = page.get('title'), page.get('filename')
             html += f'<li><a href="{filename}.html">{title}</a></li>'
-        html += '</ul>'
+        html += '</ul></details>'
         html = place_in_container('div', '', html)
         return html
 
