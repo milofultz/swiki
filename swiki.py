@@ -54,9 +54,12 @@ def place_in_container(element: str, html_id: str, content: str) -> str:
 
 def copy_css_file(pages_dir: str, output_dir: str):
     """ If CSS file in _swiki directory, copy to output """
-    if os.path.isdir(swiki_folder := os.path.join(pages_dir, '_swiki')):
-        css_file = [file for file in os.listdir(swiki_folder) if os.path.splitext(file)[1] == '.css'][0]
-        shutil.copy2(os.path.join(swiki_folder, css_file), os.path.join(output_dir, css_file))
+    swiki_folder = os.path.join(pages_dir, '_swiki')
+    if not os.path.isdir(swiki_folder):
+        return
+    for file in os.listdir(swiki_folder):
+        if os.path.splitext(file)[1] == '.css':
+            shutil.copy2(os.path.join(swiki_folder, file), os.path.join(output_dir, file))
 
 
 ################

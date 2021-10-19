@@ -65,5 +65,53 @@ class InitTestCase(unittest.TestCase):
         shutil.rmtree(self.test_path)
 
 
+class BuildUtilitiesTestCase(unittest.TestCase):
+    """ Tests build utilities """
+
+    def setUp(self) -> None:
+        self.test_path = os.path.join(current_dir, '__delete_test')
+        if os.path.isdir(self.test_path):
+            shutil.rmtree(self.test_path)
+        os.makedirs(self.test_path)
+
+    def test_copy_css_file_if_exists(self):
+        # SET UP
+        test_css = os.path.join(self.test_path, '_swiki', 'test.css')
+        test_swiki = os.path.join(self.test_path, '_swiki')
+        os.mkdir(test_swiki)
+        touch(test_css, 'test')
+        test_output = os.path.join(self.test_path, 'output')
+        os.mkdir(test_output)
+
+        # TEST
+        swiki.copy_css_file(self.test_path, test_output)
+        self.assertTrue(os.path.isfile(os.path.join(test_output, 'test.css')))
+
+        # TEAR DOWN
+        os.remove(test_css)
+        os.remove(os.path.join(test_output, 'test.css'))
+        os.rmdir(test_swiki)
+        os.rmdir(test_output)
+
+    def test_copy_css_file_if_not_exists(self):
+        # SET UP
+        test_swiki = os.path.join(self.test_path, '_swiki')
+        os.mkdir(test_swiki)
+        test_output = os.path.join(self.test_path, 'output')
+        os.mkdir(test_output)
+
+        # TEST
+        swiki.copy_css_file(self.test_path, test_output)
+        self.assertEqual(os.listdir(test_swiki), [])
+        self.assertEqual(os.listdir(test_output), [])
+
+        # TEAR DOWN
+        os.rmdir(test_swiki)
+        os.rmdir(test_output)
+
+    def tearDown(self) -> None:
+        shutil.rmtree(self.test_path)
+
+
 if __name__ == '__main__':
     unittest.main()
