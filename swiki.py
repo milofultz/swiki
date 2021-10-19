@@ -68,7 +68,7 @@ def add_last_modified(content: str, lm_text: str) -> str:
     return f'{content}\n<p class="last-modified"><em>Last modified: {lm_text}</em></p>'
 
 
-def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = False) -> dict:
+def make_page_dict(subfolder: str, file: str, rel_path: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
     page = dict()
     page['folder'] = rel_path
@@ -83,7 +83,7 @@ def make_page_dict(subfolder: str, file: str, rel_path: str, isIndex: bool = Fal
     tab_spaces = ' ' * CONFIG.get('TabSize')
     page['content'] = page.get('content').replace('\t', tab_spaces)
     page['links'] = links.get_local(page.get('content'))
-    if isIndex:
+    if is_index:
         page['index'] = True
     return page
 
@@ -201,7 +201,6 @@ def make_wiki(pages_dir: str, output_dir: str):
                 pages[page_filename] = page
 
     swiki_dir = os.path.join(pages_dir, '_swiki')
-
 
     # If there is an index file, build page dict
     if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
