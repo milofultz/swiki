@@ -26,7 +26,7 @@ marko = Markdown(extensions=['gfm'])
 #############
 
 
-def update_config(fp: str):
+def update_config(config: dict, fp: str):
     """ Update default config with any user values """
     with open(fp, 'r') as f:
         config_file = f.read()
@@ -36,7 +36,7 @@ def update_config(fp: str):
         key, value = line.split('=', 1)
         key, value = key.strip(), value.strip()
         # Cast the config value to the type that's in the default
-        CONFIG[key] = type(CONFIG.get(key, 'string'))(value)
+        config[key] = type(config.get(key, 'string'))(value)
 
 
 def delete_current_html(directory: str):
@@ -287,6 +287,6 @@ if __name__ == "__main__":
         delete_current_html(args.output_dir)
     config_fp = os.path.join(args.input_dir, '_swiki', 'config.ini')
     if os.path.isfile(config_fp):
-        update_config(config_fp)
+        update_config(CONFIG, config_fp)
 
     make_wiki(args.input_dir, args.output_dir)
