@@ -1,5 +1,7 @@
 import os
 import shutil
+from textwrap import dedent
+import time
 import unittest
 
 import swiki
@@ -114,6 +116,12 @@ class BuildUtilitiesTestCase(unittest.TestCase):
 
 
 class WikiHelpersTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.test_path = os.path.join(current_dir, '__delete_test')
+        if os.path.isdir(self.test_path):
+            shutil.rmtree(self.test_path)
+        os.makedirs(self.test_path)
+
     def test_place_in_container(self):
         element = swiki.place_in_container('p', 'test', 'Inner text!')
         self.assertEqual(element, '<p id="test">Inner text!</p>')
@@ -125,6 +133,45 @@ class WikiHelpersTestCase(unittest.TestCase):
     def test_add_last_modified(self):
         html = swiki.add_last_modified('preceding content', 'lm_text')
         self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
+
+    def test_make_page_dict_basic(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The content""")
+        test_input_path = os.path.join(self.test_path, 'input')
+        os.makedirs(os.path.join(self.test_path, 'input', 'sub'))
+        test_page_filename = 'test-page.md'
+        test_page_fp = os.path.join(test_input_path, 'sub', test_page_filename)
+        with open(test_page_fp, 'a') as f:
+            f.write(test_page)
+        test_page_lm = time.strftime("%Y%m%d%H%M", time.gmtime(os.path.getmtime(test_page_fp)))
+
+        # TEST
+        page_dict = swiki.make_page_dict(os.path.join(test_input_path, 'sub'), test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                # Have to add this in to get last modified time formatted correctly
+                'last_modified': test_page_lm,
+            },
+            'content': 'The content',
+            'links': [],
+        })
+
+        # TEAR DOWN
+        os.remove(test_page_fp)
+        os.rmdir(os.path.join(test_input_path, 'sub'))
+        os.rmdir(test_input_path)
+
+    def tearDown(self):
+        shutil.rmtree(self.test_path)
 
 
 if __name__ == '__main__':
