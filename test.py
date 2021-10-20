@@ -354,15 +354,15 @@ class FillFrameTestCase(unittest.TestCase):
         test_metadata = dict()
         filled = swiki.fill_frame(self.test_frame, self.test_content, test_metadata)
         self.assertEqual(filled, dedent("""\
-        <html>
-            <head>
-                <title></title>
-                <meta name="description" content="">
-            </head>
-            <body>
-                Test content
-            </body>
-        </html>"""))
+            <html>
+                <head>
+                    <title></title>
+                    <meta name="description" content="">
+                </head>
+                <body>
+                    Test content
+                </body>
+            </html>"""))
 
     def test_fill_frame_with_metadata(self):
         test_metadata = {
