@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 import os
 import re
 import shutil
@@ -86,7 +85,7 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     return page
 
 
-def add_page_to_sitemap(page_info: dict, folder: str, sitemap: defaultdict):
+def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
     """ Add page info to sitemap """
     updated_folder = sitemap.get(folder, [])
     updated_folder.append(page_info)
@@ -221,7 +220,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         frame = frame.replace('{{ff_size}}', ff_size)
 
     # Build all files and populate sitemap dict
-    sitemap = defaultdict(dict)
+    sitemap = dict()
     fatfile = ''
     index = {'metadata': dict()}
     for filename, info in pages.items():
