@@ -16,8 +16,6 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class InitTestCase(unittest.TestCase):
-    """ Tests program initialization variations """
-
     def setUp(self):
         self.test_path = os.path.join(current_dir, '__delete_test')
         if os.path.isdir(self.test_path):
@@ -68,8 +66,6 @@ class InitTestCase(unittest.TestCase):
 
 
 class BuildUtilitiesTestCase(unittest.TestCase):
-    """ Tests build utilities """
-
     def setUp(self) -> None:
         self.test_path = os.path.join(current_dir, '__delete_test')
         if os.path.isdir(self.test_path):
