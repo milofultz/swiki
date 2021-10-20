@@ -239,6 +239,32 @@ class MakePageDictTestCase(unittest.TestCase):
             'links': ['content', 'another'],
         })
 
+    def test_make_page_dict_tabs(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The content\tand tabs""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': self.test_page_lm,
+            },
+            # Assumes default tab size is 2
+            'content': 'The content  and tabs',
+            'links': [],
+        })
+
     def tearDown(self):
         shutil.rmtree(self.test_path)
 
