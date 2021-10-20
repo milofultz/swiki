@@ -451,6 +451,165 @@ class MakeFatfileTestCase(unittest.TestCase):
         os.remove(self.test_fatfile_path)
 
 
+class MakeSitemapTestCase(unittest.TestCase):
+    def setUp(self):
+        self.test_path = make_test_directory()
+        self.test_sitemap_path = os.path.join(self.test_path, 'index.html')
+        self.test_index_dict = {
+            'metadata': {
+                'title': 'Index Title',
+                'description': 'Index description'
+            },
+            'content': 'Index content',
+            'index': True
+        }
+        self.test_frame = dedent("""\
+            <html>
+                <head>
+                    <title>{{title}}</title>
+                    <meta name="description" content="{{description}}">
+                </head>
+                <body>
+                    {{content}}
+                </body>
+            </html>""")
+        self.test_sitemap = {
+            'folder': [
+                {
+                    'title': 'yeah',
+                    'filename': 'yeah'
+                },
+                {
+                    'title': 'yeah 2',
+                    'filename': 'yeah-2',
+                }
+            ],
+            'another folder': [
+                {
+                    'title': 'yeah again',
+                    'filename': 'yeah-again'
+                }
+            ]
+        }
+        self.test_stubs = [
+            {
+                'title': 'stub',
+                'filename': 'stub'
+            },
+        ]
+
+    def test_make_sitemap_no_display_name(self):
+        test_sitemap_basic = {'': [self.test_sitemap['folder'][0]]}
+        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                           self.test_frame, self.test_path)
+        with open(self.test_sitemap_path, 'r') as f:
+            actual_sitemap = f.read()
+        expected_sitemap = dedent("""\
+            <html>
+                <head>
+                    <title>Index Title</title>
+                    <meta name="description" content="Index description">
+                </head>
+                <body>
+                    <main id="main"><h1 id="title">Index Title</h1><p>Index content</p>
+            <div><details><summary>[root]</summary><ul><li><a href="yeah.html">yeah</a></li></ul></details></div></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_sitemap, actual_sitemap)
+
+        # TEAR DOWN
+        os.remove(self.test_sitemap_path)
+
+    def test_make_sitemap_single_page(self):
+        test_sitemap_basic = {'folder': [self.test_sitemap['folder'][0]]}
+        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                           self.test_frame, self.test_path)
+        with open(self.test_sitemap_path, 'r') as f:
+            actual_sitemap = f.read()
+        expected_sitemap = dedent("""\
+            <html>
+                <head>
+                    <title>Index Title</title>
+                    <meta name="description" content="Index description">
+                </head>
+                <body>
+                    <main id="main"><h1 id="title">Index Title</h1><p>Index content</p>
+            <div><details><summary>folder</summary><ul><li><a href="yeah.html">yeah</a></li></ul></details></div></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_sitemap, actual_sitemap)
+
+        # TEAR DOWN
+        os.remove(self.test_sitemap_path)
+
+    def test_make_sitemap_another_page(self):
+        test_sitemap_basic = {'folder': self.test_sitemap['folder']}
+        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                           self.test_frame, self.test_path)
+        with open(self.test_sitemap_path, 'r') as f:
+            actual_sitemap = f.read()
+        expected_sitemap = dedent("""\
+            <html>
+                <head>
+                    <title>Index Title</title>
+                    <meta name="description" content="Index description">
+                </head>
+                <body>
+                    <main id="main"><h1 id="title">Index Title</h1><p>Index content</p>
+            <div><details><summary>folder</summary><ul><li><a href="yeah.html">yeah</a></li><li><a href="yeah-2.html">yeah 2</a></li></ul></details></div></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_sitemap, actual_sitemap)
+
+        # TEAR DOWN
+        os.remove(self.test_sitemap_path)
+
+    def test_make_sitemap_with_stubs(self):
+        test_sitemap_basic = {
+            'folder': [self.test_sitemap['folder'][0]],
+            '.stubs': self.test_stubs
+        }
+        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                           self.test_frame, self.test_path)
+        with open(self.test_sitemap_path, 'r') as f:
+            actual_sitemap = f.read()
+        expected_sitemap = dedent("""\
+            <html>
+                <head>
+                    <title>Index Title</title>
+                    <meta name="description" content="Index description">
+                </head>
+                <body>
+                    <main id="main"><h1 id="title">Index Title</h1><p>Index content</p>
+            <div><details><summary>folder</summary><ul><li><a href="yeah.html">yeah</a></li></ul></details></div><div><details><summary>Wiki Stubs</summary><ul><li><a href="stub.html">stub</a></li></ul></details></div></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_sitemap, actual_sitemap)
+
+        # TEAR DOWN
+        os.remove(self.test_sitemap_path)
+
+    def test_make_sitemap_another_folder(self):
+        swiki.make_sitemap(self.test_index_dict, self.test_sitemap,
+                           self.test_frame, self.test_path)
+        with open(self.test_sitemap_path, 'r') as f:
+            actual_sitemap = f.read()
+        expected_sitemap = dedent("""\
+            <html>
+                <head>
+                    <title>Index Title</title>
+                    <meta name="description" content="Index description">
+                </head>
+                <body>
+                    <main id="main"><h1 id="title">Index Title</h1><p>Index content</p>
+            <div><details><summary>another folder</summary><ul><li><a href="yeah-again.html">yeah again</a></li></ul></details></div><div><details><summary>folder</summary><ul><li><a href="yeah.html">yeah</a></li><li><a href="yeah-2.html">yeah 2</a></li></ul></details></div></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_sitemap, actual_sitemap)
+
+        # TEAR DOWN
+        os.remove(self.test_sitemap_path)
+
 
 if __name__ == '__main__':
     unittest.main()
