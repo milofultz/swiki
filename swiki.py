@@ -229,7 +229,7 @@ def make_wiki(pages_dir: str, output_dir: str):
     sitemap = defaultdict(dict)
     fatfile = ''
     index = {'metadata': dict()}
-    for page, info in pages.items():
+    for filename, info in pages.items():
         # If it's the index/sitemap page, don't build it
         if info.get('index'):
             index = info
@@ -237,7 +237,7 @@ def make_wiki(pages_dir: str, output_dir: str):
         # If page is linked to but it hasn't been made yet, give it placeholder metadata
         if not info.get('metadata'):
             info['metadata'] = dict()
-        info['metadata'] = {'title': info['metadata'].get('title', page),
+        info['metadata'] = {'title': info['metadata'].get('title', filename),
                             'description': info['metadata'].get('description', ''),
                             'last_modified': info['metadata'].get('last_modified', '')}
 
@@ -253,7 +253,7 @@ def make_wiki(pages_dir: str, output_dir: str):
 
         if args.build_fatfile:
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
-                                     f'<a href="{page}.html">{info["metadata"].get("title")}</a>',
+                                     f'<a href="{filename}.html">{info["metadata"].get("title")}</a>',
                                      content)
             fatfile += place_in_container('article', None, fatfile_content)
 
@@ -261,10 +261,10 @@ def make_wiki(pages_dir: str, output_dir: str):
         content = place_in_container('main', 'main', content)
         filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
 
-        with open(os.path.join(output_dir, f'{page}.html'), 'w') as f:
+        with open(os.path.join(output_dir, f'{filename}.html'), 'w') as f:
             f.write(filled_frame)
 
-        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
+        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': filename},
                                       # If no folder here, then it is a stub
                                       info.get('folder', '.stubs'),
                                       sitemap)
