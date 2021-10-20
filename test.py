@@ -187,6 +187,31 @@ class MakePageDictTestCase(unittest.TestCase):
             'links': [],
         })
 
+    def test_make_page_dict_link(self):
+        # SET UP
+        test_page = dedent("""\
+            ---
+            title: yeah
+            description: uh huh
+            ---
+            
+            The {{content}}""")
+        with open(self.test_page_fp, 'w') as f:
+            f.write(test_page)
+
+        # TEST
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        self.assertDictEqual(page_dict, {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': self.test_page_lm,
+            },
+            'content': 'The {{content}}',
+            'links': ['content'],
+        })
+
     def tearDown(self):
         shutil.rmtree(self.test_path)
 
