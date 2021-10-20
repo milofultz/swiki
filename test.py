@@ -45,7 +45,7 @@ class InitTestCase(unittest.TestCase):
         os.remove(test_css)
         os.rmdir(test_folder)
 
-    def test_update_config(self):
+    def test_update_config_existing(self):
         # SET UP
         swiki_folder = os.path.join(self.test_path, '_swiki')
         os.mkdir(swiki_folder)
@@ -56,6 +56,23 @@ class InitTestCase(unittest.TestCase):
         test_config = {'TabSize': 2}
         swiki.update_config(test_config, test_config_fp)
         self.assertEqual(test_config.get('TabSize'), 4)
+
+        # TEAR DOWN
+        os.remove(test_config_fp)
+        os.rmdir(swiki_folder)
+
+    def test_update_config_new(self):
+        # SET UP
+        swiki_folder = os.path.join(self.test_path, '_swiki')
+        os.mkdir(swiki_folder)
+        test_config_fp = os.path.join(swiki_folder, 'config.ini')
+        touch(test_config_fp, 'NewItem = 123abc')
+
+        # TEST
+        test_config = {'TabSize': 2}
+        swiki.update_config(test_config, test_config_fp)
+        self.assertEqual(test_config.get('TabSize'), 2)
+        self.assertEqual(test_config.get('NewItem'), '123abc')
 
         # TEAR DOWN
         os.remove(test_config_fp)
