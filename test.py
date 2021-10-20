@@ -326,5 +326,45 @@ class SitemapTestCase(unittest.TestCase):
         self.assertDictEqual(test_sitemap, result_sitemap)
 
 
+class FillFrameTestCase(unittest.TestCase):
+    def setUp(self):
+        self.test_page_dict = {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': '202001010000',
+            },
+            'content': 'The content',
+            'links': [],
+            'index': True
+        }
+        self.test_frame = dedent("""\
+        <html>
+            <head>
+                <title>{{title}}</title>
+                <meta name="description" content="{{description}}">
+            </head>
+            <body>
+                {{content}}
+            </body>
+        </html>""")
+        self.test_content = 'Test content'
+
+    def test_fill_frame_empty_metadata(self):
+        test_metadata = dict()
+        filled = swiki.fill_frame(self.test_frame, self.test_content, test_metadata)
+        self.assertEqual(filled, dedent("""\
+        <html>
+            <head>
+                <title></title>
+                <meta name="description" content="">
+            </head>
+            <body>
+                Test content
+            </body>
+        </html>"""))
+
+
 if __name__ == '__main__':
     unittest.main()
