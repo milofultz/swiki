@@ -26,10 +26,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 class InitTestCase(unittest.TestCase):
     def setUp(self):
-        self.test_path = os.path.join(current_dir, '__delete_test')
-        if os.path.isdir(self.test_path):
-            shutil.rmtree(self.test_path)
-        os.makedirs(self.test_path)
+        self.test_path = make_test_directory()
 
     def test_delete_current_html(self):
         # SET UP
@@ -93,10 +90,7 @@ class InitTestCase(unittest.TestCase):
 
 class BuildUtilitiesTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.test_path = os.path.join(current_dir, '__delete_test')
-        if os.path.isdir(self.test_path):
-            shutil.rmtree(self.test_path)
-        os.makedirs(self.test_path)
+        self.test_path = make_test_directory()
 
     def test_copy_css_file_if_exists(self):
         # SET UP
@@ -158,10 +152,7 @@ class WikiHelpersTestCase(unittest.TestCase):
 
 class MakePageDictTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.test_path = os.path.join(current_dir, '__delete_test')
-        if os.path.isdir(self.test_path):
-            shutil.rmtree(self.test_path)
-        os.makedirs(self.test_path)
+        self.test_path = make_test_directory()
 
         self.test_input_path = os.path.join(self.test_path, 'input')
         self.test_page_filename = 'test-page.md'
