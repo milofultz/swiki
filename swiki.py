@@ -244,7 +244,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         content = links.add_backlinks(content, info.get('backlinks', []))
         content = add_last_modified(content, info['metadata'].get('last_modified'))
 
-        if args.build_fatfile:
+        if config.get('build_fatfile'):
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
                                      f'<a href="{filename}.html">{info["metadata"].get("title")}</a>',
                                      content)
@@ -262,7 +262,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
                                       info.get('folder', '.stubs'),
                                       sitemap)
 
-    if args.build_fatfile:
+    if config.get('build_fatfile'):
         make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
     make_sitemap(index, sitemap, frame, output_dir)
     copy_css_file(pages_dir, output_dir)
@@ -283,7 +283,10 @@ if __name__ == "__main__":
     if args.delete_current_html:
         delete_current_html(args.output_dir)
 
-    config = {'TabSize': 2}
+    config = {
+        'TabSize': 2,
+        'build_fatfile': args.build_fatfile
+    }
     config_fp = os.path.join(args.input_dir, '_swiki', 'config.ini')
     if os.path.isfile(config_fp):
         update_config(config, config_fp)
