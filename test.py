@@ -714,7 +714,7 @@ class MakeWikiTestCase(unittest.TestCase):
         touch(test_frame_path, test_frame_content)
         test_css_path = os.path.join(test_swiki_folder, 'style.css')
         touch(test_css_path, 'body { font-size: 40rem; color: blue; }')
-        cls.test_config = {'TabSize': 2}
+        cls.test_config = {'TabSize': 2, 'build_fatfile': False}
 
     def tearDown(self):
         empty(self.test_output_folder)
@@ -746,6 +746,54 @@ class MakeWikiTestCase(unittest.TestCase):
 
         test_css_path = os.path.join(self.test_output_folder, 'style.css')
         self.assertTrue(os.path.isfile(test_css_path))
+
+    def test_index(self):
+        # SET UP
+        test_index_file_path = os.path.join(self.test_input_folder, '_swiki', 'index.md')
+        test_index_file_content = dedent("""\
+            ---
+            title: Website Index
+            description: Index description.
+            ---
+
+            This is the index, wow.""")
+        touch(test_index_file_path, test_index_file_content)
+
+        # TESTS
+        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
+                        self.test_config)
+        output_index_file_path = os.path.join(self.test_output_folder, 'index.html')
+        self.assertTrue(os.path.isfile(output_index_file_path))
+        expected_index_file_content = dedent(f"""\
+            <html><head><title>Website Index</title><meta name="description" content="Index description."></head><body><main id="main"><h1 id="title">Website Index</h1><p>This is the index, wow.</p>
+            <div><details><summary>[root]</summary><ul><li><a href="another-file.html">Another File</a></li><li><a href="example-file.html">Example File</a></li></ul></details></div></main></body></html>""")
+        with open(output_index_file_path, 'r') as f:
+            actual_index_file_content = f.read()
+        self.assertEqual(expected_index_file_content, actual_index_file_content)
+
+        # TEAR DOWN
+        os.remove(test_index_file_path)
+
+    def test_fatfile(self):
+        fatfile_config = {
+            **self.test_config,
+            'build_fatfile': True
+        }
+        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
+                        fatfile_config)
+        test_fatfile_file_path = os.path.join(self.test_output_folder, 'fatfile.html')
+        self.assertTrue(os.path.isfile(test_fatfile_file_path))
+        expected_fatfile_file_content = dedent(f"""\
+            <html><head><title>Fatfile</title><meta name="description" content=""></head><body><main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><article><h1><a href="another-file.html">Another File</a></h1>
+            <p>Another set of content, with <em>italics</em>!</p>
+            
+            <p class="last-modified">Last modified: {self.another_test_file_lm}</p></article><article><h1><a href="example-file.html">Example File</a></h1>
+            <p>Some content.</p>
+            
+            <p class="last-modified">Last modified: {self.test_file_lm}</p></article></section></main></body></html>""")
+        with open(test_fatfile_file_path, 'r') as f:
+            actual_fatfile_file_content = f.read()
+        self.assertEqual(expected_fatfile_file_content, actual_fatfile_file_content)
 
     @classmethod
     def tearDownClass(cls):

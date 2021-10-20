@@ -263,7 +263,15 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
                                       sitemap)
 
     if config.get('build_fatfile'):
-        make_fatfile({'metadata': {'title': f'{index["metadata"].get("title")} - Fatfile'}}, fatfile, frame, output_dir)
+        fatfile_title = 'Fatfile'
+        if site_title := index["metadata"].get("title"):
+            fatfile_title = f'{site_title} - Fatfile'
+        fatfile_description = index["metadata"].get("description", "")
+        fatfile_info = {'metadata': {
+            'title': fatfile_title,
+            'description': fatfile_description
+        }}
+        make_fatfile(fatfile_info, fatfile, frame, output_dir)
     make_sitemap(index, sitemap, frame, output_dir)
     copy_css_file(pages_dir, output_dir)
 
