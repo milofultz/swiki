@@ -6,6 +6,7 @@ import time
 import unittest
 
 import swiki
+import modules.link_utilities as link
 
 
 def touch(path, content: str = ''):
@@ -22,6 +23,69 @@ def make_test_directory():
 
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
+
+
+class LinkUtilitiesTestCase(unittest.TestCase):
+    """ These are used after markdown conversion """
+    def setUp(self):
+        self.test_backlinks = [
+            {
+                'title': 'yeah',
+                'filename': 'yeah'
+            },
+            {
+                'title': 'yeah 2',
+                'filename': 'yeah-2',
+            }
+        ]
+
+    def test_kebabify_basic(self):
+        test_name = 'A local link'
+        expected_output = 'a-local-link'
+        actual_output = link.kebabify(test_name)
+        self.assertEqual(expected_output, actual_output)
+
+    def test_kebabify_special_chars(self):
+        test_name = 'A local/link (special)'
+        expected_output = 'a-locallink-special'
+        actual_output = link.kebabify(test_name)
+        self.assertEqual(expected_output, actual_output)
+
+    def test_get_local(self):
+        test_content = """A {{local link}}, a {{local link|with another name}}, and an <a href="www.example.com">external link</a>."""
+        expected_local_links = ['local link', 'with another name']
+        actual_local_links = link.get_local(test_content)
+        self.assertListEqual(expected_local_links, actual_local_links)
+
+    def test_add_local(self):
+        test_content = """A {{local link}}, a {{local link|with another name}}, and an <a href="www.example.com">external link</a>."""
+        expected_output = """A <a href="local-link.html">local link</a>, a <a href="with-another-name.html">local link</a>, and an <a href="www.example.com">external link</a>."""
+        actual_output = link.add_local(test_content)
+        self.assertEqual(expected_output, actual_output)
+
+    def test_add_external(self):
+        test_content = """A {{local link}}, a {{local link|with another name}}, and an <a href="www.example.com">external link</a>."""
+        expected_output = """A {{local link}}, a {{local link|with another name}}, and an <a href="www.example.com" target="_blank">external link</a>."""
+        actual_output = link.add_external(test_content)
+        self.assertEqual(expected_output, actual_output)
+
+    def test_add_backlinks_no_backlinks(self):
+        test_content = expected_content = "Test content"
+        actual_content = link.add_backlinks(test_content, [])
+        self.assertEqual(expected_content, actual_content)
+
+    def test_add_backlinks_basic(self):
+        test_content = "<p>Test content</p>"
+        expected_content = """<p>Test content</p><section id="backlinks"><details><summary>Backlinks</summary><ul><li><a href="yeah.html">yeah</a></li><li><a href="yeah-2.html">yeah 2</a></li></ul></details></section>"""
+        actual_content = link.add_backlinks(test_content, self.test_backlinks)
+        self.assertEqual(expected_content, actual_content)
+
+    def test_add_backlinks_duplicates(self):
+        test_backlinks = [*self.test_backlinks, self.test_backlinks[0]]
+        test_content = "<p>Test content</p>"
+        expected_content = """<p>Test content</p><section id="backlinks"><details><summary>Backlinks</summary><ul><li><a href="yeah.html">yeah</a></li><li><a href="yeah-2.html">yeah 2</a></li></ul></details></section>"""
+        actual_content = link.add_backlinks(test_content, test_backlinks)
+        self.assertEqual(expected_content, actual_content)
 
 
 class InitTestCase(unittest.TestCase):
