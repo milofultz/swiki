@@ -22,9 +22,9 @@ marko = Markdown(extensions=['gfm'])
 #############
 
 
-def update_config(config: dict, fp: str):
+def update_config(internal_config: dict, external_config_fp: str):
     """ Update default config with any user values """
-    with open(fp, 'r') as f:
+    with open(external_config_fp, 'r') as f:
         config_file = f.read()
     for line in config_file.split('\n'):
         if line == '':
@@ -32,7 +32,7 @@ def update_config(config: dict, fp: str):
         key, value = line.split('=', 1)
         key, value = key.strip(), value.strip()
         # Cast the config value to the type that's in the default
-        config[key] = type(config.get(key, 'string'))(value)
+        internal_config[key] = type(internal_config.get(key, 'string'))(value)
 
 
 def delete_current_html(directory: str):
@@ -151,7 +151,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 ################
 
 
-def make_wiki(pages_dir: str, output_dir: str, config: dict):
+def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     """ Create flat wiki out of all pages """
     pages = dict()
 
@@ -235,7 +235,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
                             'last_modified': info['metadata'].get('last_modified', '')}
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = content.replace('\t', ' ' * config.get('TabSize'))
+        content = content.replace('\t', ' ' * build_config.get('TabSize'))
         content = dedent(f'''\
             <h1 id="title">{info["metadata"].get("title")}</h1>\n\
             {content}''')
@@ -244,7 +244,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         content = links.add_backlinks(content, info.get('backlinks', []))
         content = add_last_modified(content, info['metadata'].get('last_modified'))
 
-        if config.get('build_fatfile'):
+        if build_config.get('build_fatfile'):
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
                                      f'<a href="{filename}.html">{info["metadata"].get("title")}</a>',
                                      content)
