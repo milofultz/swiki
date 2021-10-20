@@ -13,6 +13,14 @@ def touch(path, content: str = ''):
         f.write(content)
 
 
+def make_test_directory():
+    test_path = os.path.join(current_dir, '__delete_test')
+    if os.path.isdir(test_path):
+        shutil.rmtree(test_path)
+    os.makedirs(test_path)
+    return test_path
+
+
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -381,6 +389,76 @@ class FillFrameTestCase(unittest.TestCase):
                 Test content
             </body>
         </html>"""))
+
+
+class MakeFatfileTestCase(unittest.TestCase):
+    def setUp(self):
+        self.test_path = make_test_directory()
+        self.test_page_dict = {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': '202001010000',
+            },
+            'content': 'The content',
+            'links': [],
+            'index': True
+        }
+        self.test_frame = dedent("""\
+            <html>
+                <head>
+                    <title>{{title}}</title>
+                    <meta name="description" content="{{description}}">
+                </head>
+                <body>
+                    {{content}}
+                </body>
+            </html>""")
+        self.test_fatfile_path = os.path.join(self.test_path, 'fatfile.html')
+
+    def test_make_fatfile_basic(self):
+        test_fatfile_content = 'Test content'
+        swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
+                           self.test_frame, self.test_path)
+        with open(self.test_fatfile_path, 'r') as f:
+            actual_fatfile = f.read()
+        expected_fatfile = dedent("""\
+            <html>
+                <head>
+                    <title>yeah</title>
+                    <meta name="description" content="uh huh">
+                </head>
+                <body>
+                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>Test content</section></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_fatfile, actual_fatfile)
+
+        # TEAR DOWN
+        os.remove(self.test_fatfile_path)
+
+    def test_make_fatfile_remove_ids(self):
+        test_fatfile_content = '<p id="remove-this">Test content</p>'
+        swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
+                           self.test_frame, self.test_path)
+        with open(self.test_fatfile_path, 'r') as f:
+            actual_fatfile = f.read()
+        expected_fatfile = dedent("""\
+            <html>
+                <head>
+                    <title>yeah</title>
+                    <meta name="description" content="uh huh">
+                </head>
+                <body>
+                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><p>Test content</p></section></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_fatfile, actual_fatfile)
+
+        # TEAR DOWN
+        os.remove(self.test_fatfile_path)
+
 
 
 if __name__ == '__main__':
