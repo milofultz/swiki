@@ -14,6 +14,14 @@ def touch(path, content: str = ''):
         f.write(content)
 
 
+def empty(input_path: str):
+    for root, dirs, files in os.walk(input_path):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+
+
 def make_test_directory():
     test_path = os.path.join(current_dir, '__delete_test')
     if os.path.isdir(test_path):
@@ -89,8 +97,12 @@ class LinkUtilitiesTestCase(unittest.TestCase):
 
 
 class InitTestCase(unittest.TestCase):
-    def setUp(self):
-        self.test_path = make_test_directory()
+    @classmethod
+    def setUpClass(cls):
+        cls.test_path = make_test_directory()
+
+    def tearDown(self):
+        empty(self.test_path)
 
     def test_delete_current_html(self):
         # SET UP
@@ -111,10 +123,6 @@ class InitTestCase(unittest.TestCase):
         self.assertTrue(os.path.isfile(test_css))
         self.assertTrue(os.path.isdir(test_folder))
 
-        # TEAR DOWN
-        os.remove(test_css)
-        os.rmdir(test_folder)
-
     def test_update_config_existing(self):
         # SET UP
         swiki_folder = os.path.join(self.test_path, '_swiki')
@@ -126,10 +134,6 @@ class InitTestCase(unittest.TestCase):
         test_config = {'TabSize': 2}
         swiki.update_config(test_config, test_config_fp)
         self.assertEqual(test_config.get('TabSize'), 4)
-
-        # TEAR DOWN
-        os.remove(test_config_fp)
-        os.rmdir(swiki_folder)
 
     def test_update_config_new(self):
         # SET UP
@@ -144,17 +148,19 @@ class InitTestCase(unittest.TestCase):
         self.assertEqual(test_config.get('TabSize'), 2)
         self.assertEqual(test_config.get('NewItem'), '123abc')
 
-        # TEAR DOWN
-        os.remove(test_config_fp)
-        os.rmdir(swiki_folder)
-
-    def tearDown(self) -> None:
-        shutil.rmtree(self.test_path)
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isfile(cls.test_path):
+            shutil.rmtree(cls.test_path)
 
 
 class BuildUtilitiesTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        self.test_path = make_test_directory()
+    @classmethod
+    def setUpClass(cls):
+        cls.test_path = make_test_directory()
+
+    def tearDown(self):
+        empty(self.test_path)
 
     def test_copy_css_file_if_exists(self):
         # SET UP
@@ -169,12 +175,6 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         swiki.copy_css_file(self.test_path, test_output)
         self.assertTrue(os.path.isfile(os.path.join(test_output, 'test.css')))
 
-        # TEAR DOWN
-        os.remove(test_css)
-        os.remove(os.path.join(test_output, 'test.css'))
-        os.rmdir(test_swiki)
-        os.rmdir(test_output)
-
     def test_copy_css_file_if_not_exists(self):
         # SET UP
         test_swiki = os.path.join(self.test_path, '_swiki')
@@ -187,12 +187,10 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         self.assertEqual(os.listdir(test_swiki), [])
         self.assertEqual(os.listdir(test_output), [])
 
-        # TEAR DOWN
-        os.rmdir(test_swiki)
-        os.rmdir(test_output)
-
-    def tearDown(self) -> None:
-        shutil.rmtree(self.test_path)
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isfile(cls.test_path):
+            shutil.rmtree(cls.test_path)
 
 
 class WikiHelpersTestCase(unittest.TestCase):
@@ -210,15 +208,16 @@ class WikiHelpersTestCase(unittest.TestCase):
 
 
 class MakePageDictTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        self.test_path = make_test_directory()
+    @classmethod
+    def setUpClass(cls):
+        cls.test_path = make_test_directory()
 
-        self.test_input_path = os.path.join(self.test_path, 'input')
-        self.test_input_rel_path = 'sub'
-        self.test_page_filename = 'test-page.md'
-        os.makedirs(os.path.join(self.test_input_path, self.test_input_rel_path))
-        self.test_page_fp = os.path.join(self.test_input_path, self.test_input_rel_path, self.test_page_filename)
-        self.test_page_lm = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
+        cls.test_input_path = os.path.join(cls.test_path, 'input')
+        cls.test_input_rel_path = 'sub'
+        cls.test_page_filename = 'test-page.md'
+        os.makedirs(os.path.join(cls.test_input_path, cls.test_input_rel_path))
+        cls.test_page_fp = os.path.join(cls.test_input_path, cls.test_input_rel_path, cls.test_page_filename)
+        cls.test_page_lm = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
 
     def test_basic(self):
         # SET UP
@@ -351,13 +350,16 @@ class MakePageDictTestCase(unittest.TestCase):
             'index': True
         })
 
-    def tearDown(self):
-        shutil.rmtree(self.test_path)
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isfile(cls.test_path):
+            shutil.rmtree(cls.test_path)
 
 
 class SitemapTestCase(unittest.TestCase):
-    def setUp(self):
-        self.test_page_dict = {
+    @classmethod
+    def setUpClass(cls):
+        cls.test_page_dict = {
             'folder': 'sub',
             'metadata': {
                 'title': 'yeah',
@@ -386,8 +388,9 @@ class SitemapTestCase(unittest.TestCase):
 
 
 class FillFrameTestCase(unittest.TestCase):
-    def setUp(self):
-        self.test_page_dict = {
+    @classmethod
+    def setUpClass(cls):
+        cls.test_page_dict = {
             'folder': 'sub',
             'metadata': {
                 'title': 'yeah',
@@ -398,17 +401,17 @@ class FillFrameTestCase(unittest.TestCase):
             'links': [],
             'index': True
         }
-        self.test_frame = dedent("""\
-        <html>
-            <head>
-                <title>{{title}}</title>
-                <meta name="description" content="{{description}}">
-            </head>
-            <body>
-                {{content}}
-            </body>
-        </html>""")
-        self.test_content = 'Test content'
+        cls.test_frame = dedent("""\
+            <html>
+                <head>
+                    <title>{{title}}</title>
+                    <meta name="description" content="{{description}}">
+                </head>
+                <body>
+                    {{content}}
+                </body>
+            </html>""")
+        cls.test_content = 'Test content'
 
     def test_empty_metadata(self):
         test_metadata = dict()
@@ -431,21 +434,22 @@ class FillFrameTestCase(unittest.TestCase):
         }
         filled = swiki.fill_frame(self.test_frame, self.test_content, test_metadata)
         self.assertEqual(filled, dedent("""\
-        <html>
-            <head>
-                <title>The title</title>
-                <meta name="description" content="The description">
-            </head>
-            <body>
-                Test content
-            </body>
-        </html>"""))
+            <html>
+                <head>
+                    <title>The title</title>
+                    <meta name="description" content="The description">
+                </head>
+                <body>
+                    Test content
+                </body>
+            </html>"""))
 
 
 class MakeFatfileTestCase(unittest.TestCase):
-    def setUp(self):
-        self.test_path = make_test_directory()
-        self.test_page_dict = {
+    @classmethod
+    def setUpClass(cls):
+        cls.test_path = make_test_directory()
+        cls.test_page_dict = {
             'folder': 'sub',
             'metadata': {
                 'title': 'yeah',
@@ -456,7 +460,7 @@ class MakeFatfileTestCase(unittest.TestCase):
             'links': [],
             'index': True
         }
-        self.test_frame = dedent("""\
+        cls.test_frame = dedent("""\
             <html>
                 <head>
                     <title>{{title}}</title>
@@ -466,7 +470,11 @@ class MakeFatfileTestCase(unittest.TestCase):
                     {{content}}
                 </body>
             </html>""")
-        self.test_fatfile_path = os.path.join(self.test_path, 'fatfile.html')
+        cls.test_fatfile_path = os.path.join(cls.test_path, 'fatfile.html')
+
+    def tearDown(self):
+        if os.path.isfile(self.test_fatfile_path):
+            os.remove(self.test_fatfile_path)
 
     def test_basic(self):
         test_fatfile_content = 'Test content'
@@ -486,9 +494,6 @@ class MakeFatfileTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_fatfile, actual_fatfile)
 
-        # TEAR DOWN
-        os.remove(self.test_fatfile_path)
-
     def test_remove_ids(self):
         test_fatfile_content = '<p id="remove-this">Test content</p>'
         swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
@@ -507,18 +512,18 @@ class MakeFatfileTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_fatfile, actual_fatfile)
 
-        # TEAR DOWN
-        os.remove(self.test_fatfile_path)
-
-    def tearDown(self):
-        shutil.rmtree(self.test_path)
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isfile(cls.test_path):
+            shutil.rmtree(cls.test_path)
 
 
 class MakeSitemapTestCase(unittest.TestCase):
-    def setUp(self):
-        self.test_path = make_test_directory()
-        self.test_sitemap_path = os.path.join(self.test_path, 'index.html')
-        self.test_index_dict = {
+    @classmethod
+    def setUpClass(cls):
+        cls.test_path = make_test_directory()
+        cls.test_sitemap_path = os.path.join(cls.test_path, 'index.html')
+        cls.test_index_dict = {
             'metadata': {
                 'title': 'Index Title',
                 'description': 'Index description'
@@ -526,7 +531,7 @@ class MakeSitemapTestCase(unittest.TestCase):
             'content': 'Index content',
             'index': True
         }
-        self.test_frame = dedent("""\
+        cls.test_frame = dedent("""\
             <html>
                 <head>
                     <title>{{title}}</title>
@@ -536,7 +541,7 @@ class MakeSitemapTestCase(unittest.TestCase):
                     {{content}}
                 </body>
             </html>""")
-        self.test_sitemap = {
+        cls.test_sitemap = {
             'folder': [
                 {
                     'title': 'yeah',
@@ -554,12 +559,15 @@ class MakeSitemapTestCase(unittest.TestCase):
                 }
             ]
         }
-        self.test_stubs = [
+        cls.test_stubs = [
             {
                 'title': 'stub',
                 'filename': 'stub'
             },
         ]
+
+    def tearDown(self):
+        os.remove(self.test_sitemap_path)
 
     def test_no_display_name(self):
         test_sitemap_basic = {'': [self.test_sitemap['folder'][0]]}
@@ -580,9 +588,6 @@ class MakeSitemapTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_sitemap, actual_sitemap)
 
-        # TEAR DOWN
-        os.remove(self.test_sitemap_path)
-
     def test_single_page(self):
         test_sitemap_basic = {'folder': [self.test_sitemap['folder'][0]]}
         swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
@@ -602,9 +607,6 @@ class MakeSitemapTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_sitemap, actual_sitemap)
 
-        # TEAR DOWN
-        os.remove(self.test_sitemap_path)
-
     def test_another_page(self):
         test_sitemap_basic = {'folder': self.test_sitemap['folder']}
         swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
@@ -623,9 +625,6 @@ class MakeSitemapTestCase(unittest.TestCase):
                 </body>
             </html>""")
         self.assertEqual(expected_sitemap, actual_sitemap)
-
-        # TEAR DOWN
-        os.remove(self.test_sitemap_path)
 
     def test_with_stubs(self):
         test_sitemap_basic = {
@@ -649,9 +648,6 @@ class MakeSitemapTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_sitemap, actual_sitemap)
 
-        # TEAR DOWN
-        os.remove(self.test_sitemap_path)
-
     def test_another_folder(self):
         swiki.make_sitemap(self.test_index_dict, self.test_sitemap,
                            self.test_frame, self.test_path)
@@ -670,11 +666,11 @@ class MakeSitemapTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_sitemap, actual_sitemap)
 
-        # TEAR DOWN
-        os.remove(self.test_sitemap_path)
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isfile(cls.test_path):
+            shutil.rmtree(cls.test_path)
 
-    def tearDown(self):
-        shutil.rmtree(self.test_path)
 
 
 if __name__ == '__main__':
