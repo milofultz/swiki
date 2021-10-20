@@ -498,6 +498,28 @@ class MakeSitemapTestCase(unittest.TestCase):
             },
         ]
 
+    def test_make_sitemap_no_display_name(self):
+        test_sitemap_basic = {'': [self.test_sitemap['folder'][0]]}
+        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                           self.test_frame, self.test_path)
+        with open(self.test_sitemap_path, 'r') as f:
+            actual_sitemap = f.read()
+        expected_sitemap = dedent("""\
+            <html>
+                <head>
+                    <title>Index Title</title>
+                    <meta name="description" content="Index description">
+                </head>
+                <body>
+                    <main id="main"><h1 id="title">Index Title</h1><p>Index content</p>
+            <div><details><summary>[root]</summary><ul><li><a href="yeah.html">yeah</a></li></ul></details></div></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_sitemap, actual_sitemap)
+
+        # TEAR DOWN
+        os.remove(self.test_sitemap_path)
+
     def test_make_sitemap_single_page(self):
         test_sitemap_basic = {'folder': [self.test_sitemap['folder'][0]]}
         swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
