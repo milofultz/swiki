@@ -25,11 +25,11 @@ class InitTestCase(unittest.TestCase):
     def test_delete_current_html(self):
         # SET UP
         test_file = os.path.join(self.test_path, 'test.html')
-        touch(test_file, 'test')
+        touch(test_file)
         another_test_file = os.path.join(self.test_path, 'anothertest.html')
-        touch(another_test_file, 'test')
+        touch(another_test_file)
         test_css = os.path.join(self.test_path, 'style.css')
-        touch(test_css, 'test')
+        touch(test_css)
         test_folder = os.path.join(self.test_path, 'keep')
         os.mkdir(test_folder)
 
