@@ -311,7 +311,6 @@ class SitemapTestCase(unittest.TestCase):
         }
 
     def test_add_page_to_sitemap_empty_folder(self):
-        # SET UP
         test_sitemap = defaultdict()
         test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'missing', test_sitemap)
         result_sitemap = defaultdict()
@@ -319,7 +318,6 @@ class SitemapTestCase(unittest.TestCase):
         self.assertDictEqual(test_sitemap, result_sitemap)
 
     def test_add_page_to_sitemap_existing_folder(self):
-        # SET UP
         test_sitemap = defaultdict()
         test_sitemap['existing'] = [self.test_page_dict]
         test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'existing', test_sitemap)
