@@ -73,11 +73,11 @@ def add_last_modified(content: str, lm_text: str) -> str:
     return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
 
 
-def make_page_dict(subfolder: str, file: str, rel_path: str, is_index: bool = False) -> dict:
+def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
     page = dict()
     page['folder'] = rel_path
-    fp = os.path.join(subfolder, file)
+    fp = os.path.join(root, rel_path, file)
     with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
@@ -178,7 +178,7 @@ def make_wiki(pages_dir: str, output_dir: str):
             # Ignore all files with preceding underscore or non-Markdown files
             if filename[0] == '_' or extension != '.md':
                 continue
-            page = make_page_dict(subfolder, file, rel_path)
+            page = make_page_dict(pages_dir, file, rel_path)
             page_filename = links.kebabify(page['metadata'].get('title') or filename)
             if page_filename in RESERVED:
                 page_filename += '_'
