@@ -166,6 +166,7 @@ class MakePageDictTestCase(unittest.TestCase):
             },
             'content': 'The content',
             'links': [],
+            'index': False
         })
 
     def test_make_page_dict_no_desc(self):
@@ -190,6 +191,7 @@ class MakePageDictTestCase(unittest.TestCase):
             },
             'content': 'The content',
             'links': [],
+            'index': False
         })
 
     def test_make_page_dict_link(self):
@@ -215,6 +217,7 @@ class MakePageDictTestCase(unittest.TestCase):
             },
             'content': 'The {{content}}',
             'links': ['content'],
+            'index': False
         })
 
     def test_make_page_dict_multiple_links(self):
@@ -242,6 +245,7 @@ class MakePageDictTestCase(unittest.TestCase):
             },
             'content': 'The {{content}} and then...\n\n{{another}}!',
             'links': ['content', 'another'],
+            'index': False
         })
 
     def tearDown(self):

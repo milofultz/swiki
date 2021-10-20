@@ -89,8 +89,7 @@ def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) 
     last_modified = time.gmtime(os.path.getmtime(fp))
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
     page['links'] = links.get_local(page.get('content'))
-    if is_index:
-        page['index'] = True
+    page['index'] = True if is_index else False
     return page
 
 
