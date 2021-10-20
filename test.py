@@ -108,7 +108,7 @@ class InitTestCase(unittest.TestCase):
         # SET UP
         test_file = os.path.join(self.test_path, 'test.html')
         touch(test_file)
-        another_test_file = os.path.join(self.test_path, 'anothertest.html')
+        another_test_file = os.path.join(self.test_path, 'another_test.html')
         touch(another_test_file)
         test_css = os.path.join(self.test_path, 'style.css')
         touch(test_css)
@@ -150,7 +150,7 @@ class InitTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isfile(cls.test_path):
+        if os.path.isdir(cls.test_path):
             shutil.rmtree(cls.test_path)
 
 
@@ -189,7 +189,7 @@ class BuildUtilitiesTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isfile(cls.test_path):
+        if os.path.isdir(cls.test_path):
             shutil.rmtree(cls.test_path)
 
 
@@ -352,7 +352,7 @@ class MakePageDictTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isfile(cls.test_path):
+        if os.path.isdir(cls.test_path):
             shutil.rmtree(cls.test_path)
 
 
@@ -514,7 +514,7 @@ class MakeFatfileTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isfile(cls.test_path):
+        if os.path.isdir(cls.test_path):
             shutil.rmtree(cls.test_path)
 
 
@@ -668,7 +668,7 @@ class MakeSitemapTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if os.path.isfile(cls.test_path):
+        if os.path.isdir(cls.test_path):
             shutil.rmtree(cls.test_path)
 
 
