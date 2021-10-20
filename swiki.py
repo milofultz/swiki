@@ -163,7 +163,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
 
     for subfolder, _, files in os.walk(pages_dir):
         rel_path = subfolder.replace(pages_dir, '').lstrip('/')
-        # Ignore all files with preceding underscore
+        # Ignore all folders with preceding underscore
         if rel_path and rel_path[0] == '_':
             continue
         for file in files:
