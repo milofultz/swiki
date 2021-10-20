@@ -73,6 +73,11 @@ def add_last_modified(content: str, lm_text: str) -> str:
     return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
 
 
+def detab(content: str) -> str:
+    tab_spaces = ' ' * CONFIG.get('TabSize')
+    return content.replace('\t', tab_spaces)
+
+
 def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
     page = dict()
@@ -85,8 +90,6 @@ def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) 
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
     if not page['metadata'].get('description'):
         page['metadata']['description'] = ''
-    tab_spaces = ' ' * CONFIG.get('TabSize')
-    page['content'] = page.get('content').replace('\t', tab_spaces)
     page['links'] = links.get_local(page.get('content'))
     if is_index:
         page['index'] = True
@@ -242,6 +245,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                             'last_modified': info['metadata'].get('last_modified', '')}
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
+        content = detab(content)
         content = dedent(f'''\
             <h1 id="title">{info["metadata"].get("title")}</h1>\n\
             {content}''')

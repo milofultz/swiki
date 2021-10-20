@@ -124,6 +124,11 @@ class WikiHelpersTestCase(unittest.TestCase):
         html = swiki.add_last_modified('preceding content', 'lm_text')
         self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
 
+    def test_detab(self):
+        # Assumes config default is 2 spaces per tab
+        content = 'Yeah\tthings!'
+        self.assertEqual(swiki.detab(content), 'Yeah  things!')
+
 
 class MakePageDictTestCase(unittest.TestCase):
     def setUp(self) -> None:
@@ -237,32 +242,6 @@ class MakePageDictTestCase(unittest.TestCase):
             },
             'content': 'The {{content}} and then...\n\n{{another}}!',
             'links': ['content', 'another'],
-        })
-
-    def test_make_page_dict_tabs(self):
-        # SET UP
-        test_page = dedent("""\
-            ---
-            title: yeah
-            description: uh huh
-            ---
-            
-            The content\tand tabs""")
-        with open(self.test_page_fp, 'w') as f:
-            f.write(test_page)
-
-        # TEST
-        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
-        self.assertDictEqual(page_dict, {
-            'folder': 'sub',
-            'metadata': {
-                'title': 'yeah',
-                'description': 'uh huh',
-                'last_modified': self.test_page_lm,
-            },
-            # Assumes default tab size is 2
-            'content': 'The content  and tabs',
-            'links': [],
         })
 
     def tearDown(self):
