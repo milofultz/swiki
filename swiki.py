@@ -14,7 +14,6 @@ import modules.link_utilities as links
 
 RESERVED = ['index', 'fatfile']
 
-# marko = Markdown(extensions=['codehilite', 'gfm'])
 marko = Markdown(extensions=['gfm'])
 
 
@@ -77,7 +76,7 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
-    page['metadata']['description'] = page['metadata'].get('description', '') or ''
+    page['metadata']['description'] = page['metadata'].get('description') or ''
     last_modified = time.gmtime(os.path.getmtime(fp))
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
     page['links'] = links.get_local(page.get('content'))
@@ -118,12 +117,12 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
     index_html += marko.convert(index.get('content', ''))
     sitemap_html = ''
 
-    def convert_folder_to_html(folder: str, display_name: str = None) -> str:
+    def convert_folder_to_html(folder_name: str, display_name: str = None) -> str:
         if not display_name:
-            display_name = folder if folder else "[root]"
+            display_name = folder_name if folder_name else "[root]"
         display_name = display_name.replace('/', '/<wbr/>')
         html = ''
-        sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
+        sorted_folder_list = sorted(sitemap.get(folder_name), key=lambda page_info: page_info.get('title').lower())
         html += f'<details><summary>{display_name}</summary><ul>'
         for page in sorted_folder_list:
             title, filename = page.get('title'), page.get('filename')
