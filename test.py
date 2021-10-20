@@ -219,9 +219,10 @@ class MakePageDictTestCase(unittest.TestCase):
         self.test_path = make_test_directory()
 
         self.test_input_path = os.path.join(self.test_path, 'input')
+        self.test_input_rel_path = 'sub'
         self.test_page_filename = 'test-page.md'
-        os.makedirs(os.path.join(self.test_input_path, 'sub'))
-        self.test_page_fp = os.path.join(self.test_input_path, 'sub', self.test_page_filename)
+        os.makedirs(os.path.join(self.test_input_path, self.test_input_rel_path))
+        self.test_page_fp = os.path.join(self.test_input_path, self.test_input_rel_path, self.test_page_filename)
         self.test_page_lm = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
 
     def test_make_page_dict_basic(self):
@@ -237,7 +238,7 @@ class MakePageDictTestCase(unittest.TestCase):
             f.write(test_page)
 
         # TEST
-        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_input_rel_path, self.test_page_filename)
         self.assertDictEqual(page_dict, {
             'folder': 'sub',
             'metadata': {
@@ -262,7 +263,7 @@ class MakePageDictTestCase(unittest.TestCase):
             f.write(test_page)
 
         # TEST
-        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_input_rel_path, self.test_page_filename,)
         self.assertDictEqual(page_dict, {
             'folder': 'sub',
             'metadata': {
@@ -288,7 +289,7 @@ class MakePageDictTestCase(unittest.TestCase):
             f.write(test_page)
 
         # TEST
-        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_input_rel_path, self.test_page_filename)
         self.assertDictEqual(page_dict, {
             'folder': 'sub',
             'metadata': {
@@ -316,7 +317,7 @@ class MakePageDictTestCase(unittest.TestCase):
             f.write(test_page)
 
         # TEST
-        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub')
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_input_rel_path, self.test_page_filename)
         self.assertDictEqual(page_dict, {
             'folder': 'sub',
             'metadata': {
@@ -342,7 +343,7 @@ class MakePageDictTestCase(unittest.TestCase):
             f.write(test_page)
 
         # TEST
-        page_dict = swiki.make_page_dict(self.test_input_path, self.test_page_filename, 'sub', True)
+        page_dict = swiki.make_page_dict(self.test_input_path, self.test_input_rel_path, self.test_page_filename, True)
         self.assertDictEqual(page_dict, {
             'folder': 'sub',
             'metadata': {
