@@ -220,7 +220,7 @@ class MakePageDictTestCase(unittest.TestCase):
         self.test_page_fp = os.path.join(self.test_input_path, self.test_input_rel_path, self.test_page_filename)
         self.test_page_lm = time.strftime("%Y%m%d%H%M", time.gmtime(time.time()))
 
-    def test_make_page_dict_basic(self):
+    def test_basic(self):
         # SET UP
         test_page = dedent("""\
             ---
@@ -246,7 +246,7 @@ class MakePageDictTestCase(unittest.TestCase):
             'index': False
         })
 
-    def test_make_page_dict_no_desc(self):
+    def test_no_desc(self):
         # SET UP
         test_page = dedent("""\
             ---
@@ -271,7 +271,7 @@ class MakePageDictTestCase(unittest.TestCase):
             'index': False
         })
 
-    def test_make_page_dict_link(self):
+    def test_link(self):
         # SET UP
         test_page = dedent("""\
             ---
@@ -297,7 +297,7 @@ class MakePageDictTestCase(unittest.TestCase):
             'index': False
         })
 
-    def test_make_page_dict_multiple_links(self):
+    def test_multiple_links(self):
         # SET UP
         test_page = dedent("""\
             ---
@@ -325,7 +325,7 @@ class MakePageDictTestCase(unittest.TestCase):
             'index': False
         })
 
-    def test_make_page_dict_index(self):
+    def test_index(self):
         # SET UP
         test_page = dedent("""\
             ---
@@ -369,14 +369,14 @@ class SitemapTestCase(unittest.TestCase):
             'index': True
         }
 
-    def test_add_page_to_sitemap_empty_folder(self):
+    def test_empty_folder(self):
         test_sitemap = defaultdict()
         test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'missing', test_sitemap)
         result_sitemap = defaultdict()
         result_sitemap['missing'] = [self.test_page_dict]
         self.assertDictEqual(test_sitemap, result_sitemap)
 
-    def test_add_page_to_sitemap_existing_folder(self):
+    def test_existing_folder(self):
         test_sitemap = defaultdict()
         test_sitemap['existing'] = [self.test_page_dict]
         test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'existing', test_sitemap)
@@ -410,7 +410,7 @@ class FillFrameTestCase(unittest.TestCase):
         </html>""")
         self.test_content = 'Test content'
 
-    def test_fill_frame_empty_metadata(self):
+    def test_empty_metadata(self):
         test_metadata = dict()
         filled = swiki.fill_frame(self.test_frame, self.test_content, test_metadata)
         self.assertEqual(filled, dedent("""\
@@ -424,7 +424,7 @@ class FillFrameTestCase(unittest.TestCase):
                 </body>
             </html>"""))
 
-    def test_fill_frame_with_metadata(self):
+    def test_with_metadata(self):
         test_metadata = {
             'title': 'The title',
             'description': 'The description'
@@ -468,7 +468,7 @@ class MakeFatfileTestCase(unittest.TestCase):
             </html>""")
         self.test_fatfile_path = os.path.join(self.test_path, 'fatfile.html')
 
-    def test_make_fatfile_basic(self):
+    def test_basic(self):
         test_fatfile_content = 'Test content'
         swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
                            self.test_frame, self.test_path)
@@ -489,7 +489,7 @@ class MakeFatfileTestCase(unittest.TestCase):
         # TEAR DOWN
         os.remove(self.test_fatfile_path)
 
-    def test_make_fatfile_remove_ids(self):
+    def test_remove_ids(self):
         test_fatfile_content = '<p id="remove-this">Test content</p>'
         swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
                            self.test_frame, self.test_path)
@@ -561,7 +561,7 @@ class MakeSitemapTestCase(unittest.TestCase):
             },
         ]
 
-    def test_make_sitemap_no_display_name(self):
+    def test_no_display_name(self):
         test_sitemap_basic = {'': [self.test_sitemap['folder'][0]]}
         swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
                            self.test_frame, self.test_path)
@@ -583,7 +583,7 @@ class MakeSitemapTestCase(unittest.TestCase):
         # TEAR DOWN
         os.remove(self.test_sitemap_path)
 
-    def test_make_sitemap_single_page(self):
+    def test_single_page(self):
         test_sitemap_basic = {'folder': [self.test_sitemap['folder'][0]]}
         swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
                            self.test_frame, self.test_path)
@@ -605,7 +605,7 @@ class MakeSitemapTestCase(unittest.TestCase):
         # TEAR DOWN
         os.remove(self.test_sitemap_path)
 
-    def test_make_sitemap_another_page(self):
+    def test_another_page(self):
         test_sitemap_basic = {'folder': self.test_sitemap['folder']}
         swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
                            self.test_frame, self.test_path)
@@ -627,7 +627,7 @@ class MakeSitemapTestCase(unittest.TestCase):
         # TEAR DOWN
         os.remove(self.test_sitemap_path)
 
-    def test_make_sitemap_with_stubs(self):
+    def test_with_stubs(self):
         test_sitemap_basic = {
             'folder': [self.test_sitemap['folder'][0]],
             '.stubs': self.test_stubs
@@ -652,7 +652,7 @@ class MakeSitemapTestCase(unittest.TestCase):
         # TEAR DOWN
         os.remove(self.test_sitemap_path)
 
-    def test_make_sitemap_another_folder(self):
+    def test_another_folder(self):
         swiki.make_sitemap(self.test_index_dict, self.test_sitemap,
                            self.test_frame, self.test_path)
         with open(self.test_sitemap_path, 'r') as f:
