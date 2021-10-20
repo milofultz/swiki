@@ -155,7 +155,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 
 def make_wiki(pages_dir: str, output_dir: str, config: dict):
     """ Create flat wiki out of all pages """
-    pages = defaultdict(dict)
+    pages = dict()
 
     ff_bytes = 0
     with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
@@ -184,6 +184,8 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
                 # if page being linked to does not yet exist, give it the title
                 # as seen in the current page (e.g. Bob Fossil, not bob-fossil).
                 # This will be overwritten by the given title if the page exists.
+                if not pages.get(link_filename):
+                    pages[link_filename] = dict()
                 if not pages[link_filename].get('metadata'):
                     pages[link_filename]['metadata'] = {'title': link, 'description': ''}
                 if not pages[link_filename].get('backlinks'):
