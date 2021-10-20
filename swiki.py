@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 import os
 import re
 import shutil
@@ -15,7 +14,6 @@ import modules.link_utilities as links
 
 RESERVED = ['index', 'fatfile']
 
-# marko = Markdown(extensions=['codehilite', 'gfm'])
 marko = Markdown(extensions=['gfm'])
 
 
@@ -24,9 +22,9 @@ marko = Markdown(extensions=['gfm'])
 #############
 
 
-def update_config(config: dict, fp: str):
+def update_config(internal_config: dict, external_config_fp: str):
     """ Update default config with any user values """
-    with open(fp, 'r') as f:
+    with open(external_config_fp, 'r') as f:
         config_file = f.read()
     for line in config_file.split('\n'):
         if line == '':
@@ -34,7 +32,7 @@ def update_config(config: dict, fp: str):
         key, value = line.split('=', 1)
         key, value = key.strip(), value.strip()
         # Cast the config value to the type that's in the default
-        config[key] = type(config.get(key, 'string'))(value)
+        internal_config[key] = type(internal_config.get(key, 'string'))(value)
 
 
 def delete_current_html(directory: str):
@@ -78,7 +76,7 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
-    page['metadata']['description'] = page['metadata'].get('description', '') or ''
+    page['metadata']['description'] = page['metadata'].get('description') or ''
     last_modified = time.gmtime(os.path.getmtime(fp))
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
     page['links'] = links.get_local(page.get('content'))
@@ -86,7 +84,7 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     return page
 
 
-def add_page_to_sitemap(page_info: dict, folder: str, sitemap: defaultdict):
+def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
     """ Add page info to sitemap """
     updated_folder = sitemap.get(folder, [])
     updated_folder.append(page_info)
@@ -119,12 +117,12 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
     index_html += marko.convert(index.get('content', ''))
     sitemap_html = ''
 
-    def convert_folder_to_html(folder: str, display_name: str = None) -> str:
+    def convert_folder_to_html(folder_name: str, display_name: str = None) -> str:
         if not display_name:
-            display_name = folder if folder else "[root]"
+            display_name = folder_name if folder_name else "[root]"
         display_name = display_name.replace('/', '/<wbr/>')
         html = ''
-        sorted_folder_list = sorted(sitemap.get(folder), key=lambda page: page.get('title').lower())
+        sorted_folder_list = sorted(sitemap.get(folder_name), key=lambda page_info: page_info.get('title').lower())
         html += f'<details><summary>{display_name}</summary><ul>'
         for page in sorted_folder_list:
             title, filename = page.get('title'), page.get('filename')
@@ -153,9 +151,9 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 ################
 
 
-def make_wiki(pages_dir: str, output_dir: str, config: dict):
+def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     """ Create flat wiki out of all pages """
-    pages = defaultdict(dict)
+    pages = dict()
 
     ff_bytes = 0
     with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
@@ -163,7 +161,7 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
 
     for subfolder, _, files in os.walk(pages_dir):
         rel_path = subfolder.replace(pages_dir, '').lstrip('/')
-        # Ignore all files with preceding underscore
+        # Ignore all folders with preceding underscore
         if rel_path and rel_path[0] == '_':
             continue
         for file in files:
@@ -184,6 +182,8 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
                 # if page being linked to does not yet exist, give it the title
                 # as seen in the current page (e.g. Bob Fossil, not bob-fossil).
                 # This will be overwritten by the given title if the page exists.
+                if not pages.get(link_filename):
+                    pages[link_filename] = dict()
                 if not pages[link_filename].get('metadata'):
                     pages[link_filename]['metadata'] = {'title': link, 'description': ''}
                 if not pages[link_filename].get('backlinks'):
@@ -219,10 +219,10 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         frame = frame.replace('{{ff_size}}', ff_size)
 
     # Build all files and populate sitemap dict
-    sitemap = defaultdict(dict)
+    sitemap = dict()
     fatfile = ''
     index = {'metadata': dict()}
-    for page, info in pages.items():
+    for filename, info in pages.items():
         # If it's the index/sitemap page, don't build it
         if info.get('index'):
             index = info
@@ -230,12 +230,12 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         # If page is linked to but it hasn't been made yet, give it placeholder metadata
         if not info.get('metadata'):
             info['metadata'] = dict()
-        info['metadata'] = {'title': info['metadata'].get('title', page),
+        info['metadata'] = {'title': info['metadata'].get('title', filename),
                             'description': info['metadata'].get('description', ''),
                             'last_modified': info['metadata'].get('last_modified', '')}
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = content.replace('\t', ' ' * config.get('TabSize'))
+        content = content.replace('\t', ' ' * build_config.get('TabSize'))
         content = dedent(f'''\
             <h1 id="title">{info["metadata"].get("title")}</h1>\n\
             {content}''')
@@ -244,9 +244,9 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         content = links.add_backlinks(content, info.get('backlinks', []))
         content = add_last_modified(content, info['metadata'].get('last_modified'))
 
-        if config.get('build_fatfile'):
+        if build_config.get('build_fatfile'):
             fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
-                                     f'<a href="{page}.html">{info["metadata"].get("title")}</a>',
+                                     f'<a href="{filename}.html">{info["metadata"].get("title")}</a>',
                                      content)
             fatfile += place_in_container('article', None, fatfile_content)
 
@@ -254,15 +254,15 @@ def make_wiki(pages_dir: str, output_dir: str, config: dict):
         content = place_in_container('main', 'main', content)
         filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
 
-        with open(os.path.join(output_dir, f'{page}.html'), 'w') as f:
+        with open(os.path.join(output_dir, f'{filename}.html'), 'w') as f:
             f.write(filled_frame)
 
-        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': page},
+        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': filename},
                                       # If no folder here, then it is a stub
                                       info.get('folder', '.stubs'),
                                       sitemap)
 
-    if config.get('build_fatfile'):
+    if build_config.get('build_fatfile'):
         fatfile_title = 'Fatfile'
         if site_title := index["metadata"].get("title"):
             fatfile_title = f'{site_title} - Fatfile'

@@ -764,6 +764,7 @@ class MakeWikiTestCase(unittest.TestCase):
                         self.test_config)
         output_index_file_path = os.path.join(self.test_output_folder, 'index.html')
         self.assertTrue(os.path.isfile(output_index_file_path))
+        # Should alphabetize pages in input folder by title metadata
         expected_index_file_content = dedent(f"""\
             <html><head><title>Website Index</title><meta name="description" content="Index description."></head><body><main id="main"><h1 id="title">Website Index</h1><p>This is the index, wow.</p>
             <div><details><summary>[root]</summary><ul><li><a href="another-file.html">Another File</a></li><li><a href="example-file.html">Example File</a></li></ul></details></div></main></body></html>""")
@@ -783,6 +784,7 @@ class MakeWikiTestCase(unittest.TestCase):
                         fatfile_config)
         test_fatfile_file_path = os.path.join(self.test_output_folder, 'fatfile.html')
         self.assertTrue(os.path.isfile(test_fatfile_file_path))
+        # This is ordered by page parse/insertion in pages dict in build
         expected_fatfile_file_content = dedent(f"""\
             <html><head><title>Fatfile</title><meta name="description" content=""></head><body><main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><article><h1><a href="another-file.html">Another File</a></h1>
             <p>Another set of content, with <em>italics</em>!</p>
