@@ -510,6 +510,9 @@ class MakeFatfileTestCase(unittest.TestCase):
         # TEAR DOWN
         os.remove(self.test_fatfile_path)
 
+    def tearDown(self):
+        shutil.rmtree(self.test_path)
+
 
 class MakeSitemapTestCase(unittest.TestCase):
     def setUp(self):
@@ -669,6 +672,9 @@ class MakeSitemapTestCase(unittest.TestCase):
 
         # TEAR DOWN
         os.remove(self.test_sitemap_path)
+
+    def tearDown(self):
+        shutil.rmtree(self.test_path)
 
 
 if __name__ == '__main__':
