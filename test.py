@@ -672,6 +672,86 @@ class MakeSitemapTestCase(unittest.TestCase):
             shutil.rmtree(cls.test_path)
 
 
+class MakeWikiTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.test_path = make_test_directory()
+        cls.test_input_folder = os.path.join(cls.test_path, 'input')
+        os.mkdir(cls.test_input_folder)
+        cls.test_output_folder = os.path.join(cls.test_path, 'output')
+        os.mkdir(cls.test_output_folder)
+        test_file_path = os.path.join(cls.test_input_folder, 'test.md')
+        test_file_content = dedent("""\
+            ---
+            title: Example File
+            description: Example description.
+            ---
+            
+            Some content.""")
+        touch(test_file_path, test_file_content)
+        cls.test_file_lm = time.strftime("%Y%m%d%H%M", time.gmtime(os.path.getmtime(test_file_path)))
+        another_test_file_path = os.path.join(cls.test_input_folder, 'another_test.md')
+        another_test_file_content = dedent("""\
+            ---
+            title: Another File
+            description: Another description.
+            ---
+
+            Another set of content, with *italics*!""")
+        touch(another_test_file_path, another_test_file_content)
+        cls.another_test_file_lm = time.strftime("%Y%m%d%H%M", time.gmtime(os.path.getmtime(another_test_file_path)))
+        test_swiki_folder = os.path.join(cls.test_input_folder, '_swiki')
+        os.mkdir(test_swiki_folder)
+        test_frame_path = os.path.join(test_swiki_folder, 'frame.html')
+        test_frame_content = dedent("""\
+            <html>
+                <head>
+                    <title>{{title}}</title>
+                    <meta name="description" content="{{description}}">
+                </head>
+                <body>{{content}}</body>
+            </html>""")
+        touch(test_frame_path, test_frame_content)
+        test_css_path = os.path.join(test_swiki_folder, 'style.css')
+        touch(test_css_path, 'body { font-size: 40rem; color: blue; }')
+        cls.test_config = {'TabSize': 2}
+
+    def tearDown(self):
+        empty(self.test_output_folder)
+
+    def test_multiple_pages(self):
+        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
+                        self.test_config)
+        test_example_file_path = os.path.join(self.test_output_folder, 'example-file.html')
+        self.assertTrue(os.path.isfile(test_example_file_path))
+        expected_example_file_content = dedent(f"""\
+            <html><head><title>Example File</title><meta name="description" content="Example description."></head><body><main id="main"><article id="content"><h1 id="title">Example File</h1>
+            <p>Some content.</p>
+            
+            <p class="last-modified">Last modified: {self.test_file_lm}</p></article></main></body></html>""")
+        with open(test_example_file_path, 'r') as f:
+            actual_example_file_content = f.read()
+        self.assertEqual(expected_example_file_content, actual_example_file_content)
+
+        test_another_file_path = os.path.join(self.test_output_folder, 'another-file.html')
+        self.assertTrue(os.path.isfile(test_another_file_path))
+        expected_another_file_content = dedent(f"""\
+            <html><head><title>Another File</title><meta name="description" content="Another description."></head><body><main id="main"><article id="content"><h1 id="title">Another File</h1>
+            <p>Another set of content, with <em>italics</em>!</p>
+            
+            <p class="last-modified">Last modified: {self.another_test_file_lm}</p></article></main></body></html>""")
+        with open(test_another_file_path, 'r') as f:
+            actual_another_file_content = f.read()
+        self.assertEqual(expected_another_file_content, actual_another_file_content)
+
+        test_css_path = os.path.join(self.test_output_folder, 'style.css')
+        self.assertTrue(os.path.isfile(test_css_path))
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.isdir(cls.test_path):
+            shutil.rmtree(cls.test_path)
+
 
 if __name__ == '__main__':
     unittest.main()
