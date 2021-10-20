@@ -318,6 +318,15 @@ class SitemapTestCase(unittest.TestCase):
         result_sitemap['missing'] = [self.test_page_dict]
         self.assertDictEqual(test_sitemap, result_sitemap)
 
+    def test_add_page_to_sitemap_existing_folder(self):
+        # SET UP
+        test_sitemap = defaultdict()
+        test_sitemap['existing'] = [self.test_page_dict]
+        test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'existing', test_sitemap)
+        result_sitemap = defaultdict()
+        result_sitemap['existing'] = [self.test_page_dict, self.test_page_dict]
+        self.assertDictEqual(test_sitemap, result_sitemap)
+
 
 if __name__ == '__main__':
     unittest.main()
