@@ -406,12 +406,13 @@ class MakeFatfileTestCase(unittest.TestCase):
                     {{content}}
                 </body>
             </html>""")
+        self.test_fatfile_path = os.path.join(self.test_path, 'fatfile.html')
 
     def test_make_fatfile_basic(self):
         test_fatfile_content = 'Test content'
         swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
                            self.test_frame, self.test_path)
-        with open(os.path.join(self.test_path, 'fatfile.html'), 'r') as f:
+        with open(self.test_fatfile_path, 'r') as f:
             actual_fatfile = f.read()
         expected_fatfile = dedent("""\
             <html>
@@ -425,9 +426,29 @@ class MakeFatfileTestCase(unittest.TestCase):
             </html>""")
         self.assertEqual(expected_fatfile, actual_fatfile)
 
-    def xtest_make_fatfile_remove_ids(self):
-        test_content = '<p id="remove-this">Test content</p>'
+        # TEAR DOWN
+        os.remove(self.test_fatfile_path)
 
+    def test_make_fatfile_remove_ids(self):
+        test_fatfile_content = '<p id="remove-this">Test content</p>'
+        swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
+                           self.test_frame, self.test_path)
+        with open(self.test_fatfile_path, 'r') as f:
+            actual_fatfile = f.read()
+        expected_fatfile = dedent("""\
+            <html>
+                <head>
+                    <title>yeah</title>
+                    <meta name="description" content="uh huh">
+                </head>
+                <body>
+                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><p>Test content</p></section></main>
+                </body>
+            </html>""")
+        self.assertEqual(expected_fatfile, actual_fatfile)
+
+        # TEAR DOWN
+        os.remove(self.test_fatfile_path)
 
 
 
