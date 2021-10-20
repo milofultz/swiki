@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import shutil
 from textwrap import dedent
@@ -293,6 +294,36 @@ class MakePageDictTestCase(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.test_path)
+
+
+class SitemapTestCase(unittest.TestCase):
+    def setUp(self):
+        self.test_page_dict = {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'yeah',
+                'description': 'uh huh',
+                'last_modified': '202001010000',
+            },
+            'content': 'The content',
+            'links': [],
+            'index': True
+        }
+
+    def test_add_page_to_sitemap_empty_folder(self):
+        test_sitemap = defaultdict()
+        test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'missing', test_sitemap)
+        result_sitemap = defaultdict()
+        result_sitemap['missing'] = [self.test_page_dict]
+        self.assertDictEqual(test_sitemap, result_sitemap)
+
+    def test_add_page_to_sitemap_existing_folder(self):
+        test_sitemap = defaultdict()
+        test_sitemap['existing'] = [self.test_page_dict]
+        test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'existing', test_sitemap)
+        result_sitemap = defaultdict()
+        result_sitemap['existing'] = [self.test_page_dict, self.test_page_dict]
+        self.assertDictEqual(test_sitemap, result_sitemap)
 
 
 if __name__ == '__main__':
