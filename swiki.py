@@ -80,16 +80,14 @@ def detab(content: str) -> str:
 
 def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
-    page = dict()
-    page['folder'] = rel_path
+    page = {'folder': rel_path}
     fp = os.path.join(root, rel_path, file)
     with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
+    page['metadata']['description'] = page['metadata'].get('description', '')
     last_modified = time.gmtime(os.path.getmtime(fp))
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
-    if not page['metadata'].get('description'):
-        page['metadata']['description'] = ''
     page['links'] = links.get_local(page.get('content'))
     if is_index:
         page['index'] = True
