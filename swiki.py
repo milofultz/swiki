@@ -85,7 +85,7 @@ def make_page_dict(root: str, file: str, rel_path: str, is_index: bool = False) 
     with open(fp, 'r') as f:
         file_contents = f.read()
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
-    page['metadata']['description'] = page['metadata'].get('description', '')
+    page['metadata']['description'] = page['metadata'].get('description', '') or ''
     last_modified = time.gmtime(os.path.getmtime(fp))
     page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
     page['links'] = links.get_local(page.get('content'))
@@ -209,7 +209,7 @@ def make_wiki(pages_dir: str, output_dir: str):
 
     # If there is an index file, build page dict
     if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
-        pages['{{SITE INDEX}}'] = make_page_dict(swiki_dir, 'index.md', '_swiki', True)
+        pages['{{SITE INDEX}}'] = make_page_dict(pages_dir, 'index.md', '_swiki', True)
 
     # Load frame file
     with open(os.path.join(swiki_dir, 'frame.html'), 'r') as f:
@@ -218,7 +218,7 @@ def make_wiki(pages_dir: str, output_dir: str):
         frame = re.sub(r'(?<=\n)\s*', '', frame)
         frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
         frame = re.sub(re.compile(r'(?<=[;{}(*/)])[\s]*'), '', frame)
-        ff_bytes *= 1.7  # roughly correct at least for my purposes
+        ff_bytes *= 1.024  # roughly correct at least for my purposes
         if ff_bytes < 1_000_000:
             ff_size = f"~{int(ff_bytes // 1_000)}kb"
         else:
