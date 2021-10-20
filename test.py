@@ -303,7 +303,7 @@ class SitemapTestCase(unittest.TestCase):
             'metadata': {
                 'title': 'yeah',
                 'description': 'uh huh',
-                'last_modified': 1_000_000_000,
+                'last_modified': '202001010000',
             },
             'content': 'The content',
             'links': [],
