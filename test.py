@@ -208,11 +208,6 @@ class WikiHelpersTestCase(unittest.TestCase):
         html = swiki.add_last_modified('preceding content', 'lm_text')
         self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
 
-    def test_detab(self):
-        # Assumes config default is 2 spaces per tab
-        content = 'Yeah\tthings!'
-        self.assertEqual(swiki.detab(content), 'Yeah  things!')
-
 
 class MakePageDictTestCase(unittest.TestCase):
     def setUp(self) -> None:

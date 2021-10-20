@@ -14,8 +14,6 @@ import modules.link_utilities as links
 
 
 RESERVED = ['index', 'fatfile']
-# All default values of config file
-CONFIG = {'TabSize': 2}
 
 # marko = Markdown(extensions=['codehilite', 'gfm'])
 marko = Markdown(extensions=['gfm'])
@@ -71,11 +69,6 @@ def add_last_modified(content: str, lm_text: str) -> str:
     if not lm_text:
         return content
     return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
-
-
-def detab(content: str) -> str:
-    tab_spaces = ' ' * CONFIG.get('TabSize')
-    return content.replace('\t', tab_spaces)
 
 
 def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) -> dict:
@@ -160,7 +153,7 @@ def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
 ################
 
 
-def make_wiki(pages_dir: str, output_dir: str):
+def make_wiki(pages_dir: str, output_dir: str, config: dict):
     """ Create flat wiki out of all pages """
     pages = defaultdict(dict)
 
@@ -242,7 +235,7 @@ def make_wiki(pages_dir: str, output_dir: str):
                             'last_modified': info['metadata'].get('last_modified', '')}
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = detab(content)
+        content = content.replace('\t', ' ' * config.get('TabSize'))
         content = dedent(f'''\
             <h1 id="title">{info["metadata"].get("title")}</h1>\n\
             {content}''')
@@ -289,8 +282,10 @@ if __name__ == "__main__":
         os.mkdir(args.output_dir)
     if args.delete_current_html:
         delete_current_html(args.output_dir)
+
+    config = {'TabSize': 2}
     config_fp = os.path.join(args.input_dir, '_swiki', 'config.ini')
     if os.path.isfile(config_fp):
-        update_config(CONFIG, config_fp)
+        update_config(config, config_fp)
 
-    make_wiki(args.input_dir, args.output_dir)
+    make_wiki(args.input_dir, args.output_dir, config)
