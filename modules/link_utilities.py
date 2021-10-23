@@ -2,7 +2,7 @@ import re
 
 re_wikilink = re.compile(r'{{.+?}}')
 re_external_link = re.compile(r'<a href=".+?"')
-re_special_characters = re.compile(r'[/()]')
+re_special_characters = re.compile(r'[/()\'\"]')
 
 
 def kebabify(text: str) -> str:
