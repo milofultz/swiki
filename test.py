@@ -59,6 +59,12 @@ class LinkUtilitiesTestCase(unittest.TestCase):
         actual_output = link.kebabify(test_name)
         self.assertEqual(expected_output, actual_output)
 
+    def test_kebabify_long(self):
+        test_name = 'lorem ipsum ' * 17
+        expected_output = ('lorem-ipsum' + '-lorem-ipsum' * 16)[:200]
+        actual_output = link.kebabify(test_name)
+        self.assertEqual(expected_output, actual_output)
+
     def test_get_local(self):
         test_content = """A {{local link}}, a {{local link|with another name}}, and an <a href="www.example.com">external link</a>."""
         expected_local_links = ['local link', 'with another name']

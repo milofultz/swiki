@@ -7,6 +7,7 @@ re_special_characters = re.compile(r'[/()\'\".!?,]')
 
 def kebabify(text: str) -> str:
     """ Format text to filename kebab-case """
+    text = text[:200]  # Enforce max length of 200 chars
     text = re_special_characters.sub('', text)
     return text.replace(' ', '-').lower()
 
