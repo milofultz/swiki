@@ -54,8 +54,8 @@ class LinkUtilitiesTestCase(unittest.TestCase):
         self.assertEqual(expected_output, actual_output)
 
     def test_kebabify_special_chars(self):
-        test_name = 'A local/link (it\'s "special")'
-        expected_output = 'a-locallink-its-special'
+        test_name = 'A local/link, yeah. (it\'s "special"!)'
+        expected_output = 'a-locallink-yeah-its-special'
         actual_output = link.kebabify(test_name)
         self.assertEqual(expected_output, actual_output)
 
