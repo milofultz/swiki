@@ -254,12 +254,12 @@ class WikiHelpersTestCase(unittest.TestCase):
         }
 
         # TESTS
-        # Run the function with the new page, the most recent, and the max
         actual_last_modified = swiki.add_to_last_modified_pages(newest_test_page, test_pages, max)
-        # Make expected list
         expected_last_modified = [newest_test_page, middle_test_page]
-        # Test that expected list is the same as the actual
         self.assertListEqual(expected_last_modified, actual_last_modified)
+        # Test that older additions won't change the list
+        unchanged_actual_last_modified = swiki.add_to_last_modified_pages(oldest_test_page, test_pages, max)
+        self.assertListEqual(actual_last_modified, unchanged_actual_last_modified)
 
 
 class MakePageDictTestCase(unittest.TestCase):

@@ -84,6 +84,20 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     return page
 
 
+def add_to_last_modified_pages(new_page: dict, last_modified: list, max: int) -> list:
+    index = 0
+    while index < max:
+        old_lm = last_modified[index]['metadata']['last_modified']
+        new_lm = new_page['metadata']['last_modified']
+        if old_lm < new_lm:
+            last_modified.insert(index, new_page)
+            last_modified.pop()
+            return last_modified
+        index += 1
+
+    return last_modified
+
+
 def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
     """ Add page info to sitemap """
     updated_folder = sitemap.get(folder, [])
