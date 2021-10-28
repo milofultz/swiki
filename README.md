@@ -144,7 +144,7 @@ This would render out five files, all using the frame:
 ## Future Improvements
 
 - Handle multiple pages with the same title. Show error that two pages cannot have the same title and one **will** be overridden. Don't let it fail silently!
+- Add a "recent changes" section.
 - Add tags for categorical linking by meta ideas, like "#activities", etc.
-- Add a test suite using `unittest`
 
 [Markdown]: https://spec.commonmark.org/0.29/
