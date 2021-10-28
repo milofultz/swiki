@@ -803,6 +803,29 @@ class MakeWikiTestCase(unittest.TestCase):
             actual_fatfile_file_content = f.read()
         self.assertEqual(expected_fatfile_file_content, actual_fatfile_file_content)
 
+    def test_recent(self):
+        # create new config that shows recent list
+        test_recent_config = {'TabSize': 2, 'build_fatfile': False,
+                              'recent_list': True}
+        # make wiki with both pages
+        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
+                        test_recent_config)
+        # should show both pages added in order of creation
+        output_index_file_path = os.path.join(self.test_output_folder, 'index.html')
+        self.assertTrue(os.path.isfile(output_index_file_path))
+        expected_index_file_content = dedent(f"""\
+            <html><head><title>Website Index</title><meta name="description" content="Index description."></head><body><main id="main">
+            <section class="recent-changes"><h2>Recent Changes:</h2><ul><li>{self.another_test_file_lm}: <a href="another-file.html">Another File</a></li><li>{self.test_file_lm}: <a href="example-file.html">Example File</a></li></section>
+            <div><details><summary>[root]</summary><ul><li><a href="another-file.html">Another File</a></li><li><a href="example-file.html">Example File</a></li></ul></details></div></main></body></html>""")
+        with open(output_index_file_path, 'r') as f:
+            actual_index_file_content = f.read()
+        self.assertEqual(expected_index_file_content, actual_index_file_content)
+        pass
+
+    @unittest.skip("stub")
+    def test_recent_list_length(self):
+        pass
+
     @classmethod
     def tearDownClass(cls):
         if os.path.isdir(cls.test_path):
