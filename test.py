@@ -212,6 +212,55 @@ class WikiHelpersTestCase(unittest.TestCase):
         html = swiki.add_last_modified('preceding content', 'lm_text')
         self.assertEqual(html, 'preceding content\n<p class="last-modified">Last modified: lm_text</p>')
 
+    def test_add_to_last_modified_pages(self):
+        # SET UP
+        # Make list of test pages
+        oldest_test_page = {
+            'folder': 'test',
+            'metadata': {
+                'title': 'Oldest Page',
+                'description': 'uh huh',
+                'last_modified': '20000101000000',
+            },
+            'content': '',
+            'links': [],
+            'index': False
+        }
+        middle_test_page = {
+            'folder': 'test',
+            'metadata': {
+                'title': 'Middle Page',
+                'description': 'uh huh',
+                'last_modified': '20020101000000',
+            },
+            'content': '',
+            'links': [],
+            'index': False
+        }
+        test_pages = [middle_test_page, oldest_test_page]
+        # Make max length as length of list
+        max = len(test_pages)
+        # Create a new test page that is newer than the other pages
+        newest_test_page = {
+            'folder': 'test',
+            'metadata': {
+                'title': 'Newest Page',
+                'description': 'uh huh',
+                'last_modified': '20040101000000',
+            },
+            'content': '',
+            'links': [],
+            'index': False
+        }
+
+        # TESTS
+        # Run the function with the new page, the most recent, and the max
+        actual_last_modified = swiki.add_to_last_modified_pages(newest_test_page, test_pages, max)
+        # Make expected list
+        expected_last_modified = [newest_test_page, middle_test_page]
+        # Test that expected list is the same as the actual
+        self.assertListEqual(expected_last_modified, actual_last_modified)
+
 
 class MakePageDictTestCase(unittest.TestCase):
     @classmethod
@@ -803,6 +852,7 @@ class MakeWikiTestCase(unittest.TestCase):
             actual_fatfile_file_content = f.read()
         self.assertEqual(expected_fatfile_file_content, actual_fatfile_file_content)
 
+    @unittest.skip("need to make last modified page aggregator")
     def test_recent(self):
         # create new config that shows recent list
         test_recent_config = {'TabSize': 2, 'build_fatfile': False,
