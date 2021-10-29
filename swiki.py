@@ -84,19 +84,21 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     return page
 
 
-def add_to_last_modified_pages(new_page: dict, last_modified: list, max: int) -> list:
+def add_to_last_modified_pages(new_page: dict, last_modified: list, max_length: int) -> list:
+    end = min(len(last_modified), max_length)
+
     index = 0
-    max = min(max, len(last_modified))
-    while index < max:
-        old_lm = last_modified[index]['metadata']['last_modified']
+    while index < end:
+        current_lm = last_modified[index]['metadata']['last_modified']
         new_lm = new_page['metadata']['last_modified']
-        if old_lm < new_lm:
-            last_modified.insert(index, new_page)
-            last_modified.pop()
-            return last_modified
+        if current_lm < new_lm:
+            break
         index += 1
 
-    return last_modified
+    if index < max_length:
+        last_modified.insert(index, new_page)
+
+    return last_modified[:max_length]
 
 
 def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
@@ -126,10 +128,24 @@ def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
         f.write(filled_frame)
 
 
-def make_sitemap(index: dict, sitemap: dict, frame: str, output_dir: str):
+def make_recent_list(last_modified: list) -> str:
+    if not last_modified:
+        return ''
+    html = '<section class="recent-list"><h2>Recent Changes:</h2><ul>'
+    for page in last_modified:
+        lm = page['metadata']['last_modified']
+        title = page['metadata']['title']
+        html += f'''<li>{lm}: <a href="{links.kebabify(title)}.html">{title}</a></li>'''
+    html += '</ul></section>'
+    return html
+
+
+def make_sitemap(index: dict, sitemap: dict, recent_list_html: str, frame: str, output_dir: str):
     """ Make sitemap out of index and all seen pages """
     index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
     index_html += marko.convert(index.get('content', ''))
+    index_html += recent_list_html
+    
     sitemap_html = ''
 
     def convert_folder_to_html(folder_name: str, display_name: str = None) -> str:
@@ -171,6 +187,8 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     pages = dict()
 
     ff_bytes = 0
+    last_modified_pages = list()
+
     with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
         frame_bytes = len(f.read().encode('utf-8'))
 
@@ -190,6 +208,8 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
                 page_filename += '_'
 
             ff_bytes += len(page.get('content', '').encode('utf-8')) + frame_bytes
+            if build_config.get('recent_list'):
+                last_modified_pages = add_to_last_modified_pages(page, last_modified_pages, build_config.get('recent_list_length'))
 
             # add backlinks to all pages this page links to
             for link in page['links']:
@@ -287,7 +307,8 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
             'description': fatfile_description
         }}
         make_fatfile(fatfile_info, fatfile, frame, output_dir)
-    make_sitemap(index, sitemap, frame, output_dir)
+    recent_list_html = make_recent_list(last_modified_pages)
+    make_sitemap(index, sitemap, recent_list_html, frame, output_dir)
     copy_css_file(pages_dir, output_dir)
 
 
