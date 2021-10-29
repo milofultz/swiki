@@ -621,15 +621,10 @@ class MakeSitemapTestCase(unittest.TestCase):
             },
         ]
 
-    def tearDown(self):
-        os.remove(self.test_sitemap_path)
-
     def test_no_display_name(self):
         test_sitemap_basic = {'': [self.test_sitemap['folder'][0]]}
-        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic, [],
-                           self.test_frame, self.test_path)
-        with open(self.test_sitemap_path, 'r') as f:
-            actual_sitemap = f.read()
+        actual_sitemap = swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                                            [], self.test_frame)
         expected_sitemap = dedent("""\
             <html>
                 <head>
@@ -645,10 +640,8 @@ class MakeSitemapTestCase(unittest.TestCase):
 
     def test_single_page(self):
         test_sitemap_basic = {'folder': [self.test_sitemap['folder'][0]]}
-        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic, [],
-                           self.test_frame, self.test_path)
-        with open(self.test_sitemap_path, 'r') as f:
-            actual_sitemap = f.read()
+        actual_sitemap = swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                                            [], self.test_frame)
         expected_sitemap = dedent("""\
             <html>
                 <head>
@@ -664,10 +657,8 @@ class MakeSitemapTestCase(unittest.TestCase):
 
     def test_another_page(self):
         test_sitemap_basic = {'folder': self.test_sitemap['folder']}
-        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic, [],
-                           self.test_frame, self.test_path)
-        with open(self.test_sitemap_path, 'r') as f:
-            actual_sitemap = f.read()
+        actual_sitemap = swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                                            [], self.test_frame)
         expected_sitemap = dedent("""\
             <html>
                 <head>
@@ -686,10 +677,8 @@ class MakeSitemapTestCase(unittest.TestCase):
             'folder': [self.test_sitemap['folder'][0]],
             '.stubs': self.test_stubs
         }
-        swiki.make_sitemap(self.test_index_dict, test_sitemap_basic, [],
-                           self.test_frame, self.test_path)
-        with open(self.test_sitemap_path, 'r') as f:
-            actual_sitemap = f.read()
+        actual_sitemap = swiki.make_sitemap(self.test_index_dict, test_sitemap_basic,
+                                            [], self.test_frame)
         expected_sitemap = dedent("""\
             <html>
                 <head>
@@ -704,10 +693,8 @@ class MakeSitemapTestCase(unittest.TestCase):
         self.assertEqual(expected_sitemap, actual_sitemap)
 
     def test_another_folder(self):
-        swiki.make_sitemap(self.test_index_dict, self.test_sitemap, [],
-                           self.test_frame, self.test_path)
-        with open(self.test_sitemap_path, 'r') as f:
-            actual_sitemap = f.read()
+        actual_sitemap = swiki.make_sitemap(self.test_index_dict, self.test_sitemap,
+                                            [], self.test_frame)
         expected_sitemap = dedent("""\
             <html>
                 <head>

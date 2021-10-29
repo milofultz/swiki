@@ -141,7 +141,7 @@ def make_recent_list(last_modified: list) -> str:
     return html
 
 
-def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str, output_dir: str):
+def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
     """ Make sitemap out of index and all seen pages """
     index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
     index_html += marko.convert(index.get('content', ''))
@@ -173,9 +173,7 @@ def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str, outp
         sitemap_html += convert_folder_to_html('.stubs', 'Wiki Stubs')
 
     page_html = place_in_container('main', 'main', index_html + sitemap_html)
-    filled_frame = fill_frame(frame, page_html, index.get('metadata', dict()))
-    with open(os.path.join(output_dir, 'index.html'), 'w') as f:
-        f.write(filled_frame)
+    return fill_frame(frame, page_html, index.get('metadata', dict()))
 
 
 ################
@@ -308,7 +306,9 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
             'description': fatfile_description
         }}
         make_fatfile(fatfile_info, fatfile, frame, output_dir)
-    make_sitemap(index, sitemap, last_modified_pages, frame, output_dir)
+    filled_frame = make_sitemap(index, sitemap, last_modified_pages, frame)
+    with open(os.path.join(output_dir, 'index.html'), 'w') as f:
+            f.write(filled_frame)
     copy_css_file(pages_dir, output_dir)
 
 
@@ -318,7 +318,7 @@ if __name__ == "__main__":
     argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
     argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
     argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
-    argparser.add_argument('--recent-list', '-rl', default=False, store="const_true", help='create most recently modified pages list on index')
+    argparser.add_argument('--recent-list', '-rl', default=False, action="store_true", help='create most recently modified pages list on index')
     argparser.add_argument('--recent-list-length', '-rll', default=10, help='length of most recently modified pages list')
     args = argparser.parse_args()
 
