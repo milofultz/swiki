@@ -129,8 +129,9 @@ def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
 
 
 def make_recent_list(last_modified: list) -> str:
-    if not last_modified:
+    if len(last_modified) == 0:
         return ''
+
     html = '<section class="recent-list"><h2>Recent Changes:</h2><ul>'
     for page in last_modified:
         lm = page['metadata']['last_modified']
