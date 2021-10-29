@@ -134,25 +134,25 @@ class InitTestCase(unittest.TestCase):
         swiki_folder = os.path.join(self.test_path, '_swiki')
         os.mkdir(swiki_folder)
         test_config_fp = os.path.join(swiki_folder, 'config.ini')
-        touch(test_config_fp, 'TabSize = 4')
+        touch(test_config_fp, 'tab_size = 4')
 
         # TEST
-        test_config = {'TabSize': 2}
+        test_config = {'tab_size': 2}
         swiki.update_config(test_config, test_config_fp)
-        self.assertEqual(test_config.get('TabSize'), 4)
+        self.assertEqual(test_config.get('tab_size'), 4)
 
     def test_update_config_new(self):
         # SET UP
         swiki_folder = os.path.join(self.test_path, '_swiki')
         os.mkdir(swiki_folder)
         test_config_fp = os.path.join(swiki_folder, 'config.ini')
-        touch(test_config_fp, 'NewItem = 123abc')
+        touch(test_config_fp, 'new_item = 123abc')
 
         # TEST
-        test_config = {'TabSize': 2}
+        test_config = {'tab_size': 2}
         swiki.update_config(test_config, test_config_fp)
-        self.assertEqual(test_config.get('TabSize'), 2)
-        self.assertEqual(test_config.get('NewItem'), '123abc')
+        self.assertEqual(test_config.get('tab_size'), 2)
+        self.assertEqual(test_config.get('new_item'), '123abc')
 
     @classmethod
     def tearDownClass(cls):
@@ -769,7 +769,8 @@ class MakeWikiTestCase(unittest.TestCase):
         touch(test_frame_path, test_frame_content)
         test_css_path = os.path.join(test_swiki_folder, 'style.css')
         touch(test_css_path, 'body { font-size: 40rem; color: blue; }')
-        cls.test_config = {'TabSize': 2, 'build_fatfile': False}
+        cls.test_config = {'tab_size': 2, 'build_fatfile': False,
+                           'recent_list': False, 'recent_list_length': 10}
 
     def tearDown(self):
         empty(self.test_output_folder)
@@ -852,11 +853,10 @@ class MakeWikiTestCase(unittest.TestCase):
             actual_fatfile_file_content = f.read()
         self.assertEqual(expected_fatfile_file_content, actual_fatfile_file_content)
 
-    @unittest.skip("need to make last modified page aggregator")
     def test_recent(self):
         # create new config that shows recent list
-        test_recent_config = {'TabSize': 2, 'build_fatfile': False,
-                              'recent_list': True}
+        test_recent_config = {'tab_size': 2, 'build_fatfile': False,
+                              'recent_list': True, 'recent_list_length': 10}
         # make wiki with both pages
         swiki.make_wiki(self.test_input_folder, self.test_output_folder,
                         test_recent_config)
