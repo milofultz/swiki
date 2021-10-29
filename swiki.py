@@ -140,11 +140,11 @@ def make_recent_list(last_modified: list) -> str:
     return html
 
 
-def make_sitemap(index: dict, sitemap: dict, recent_list_html: str, frame: str, output_dir: str):
+def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str, output_dir: str):
     """ Make sitemap out of index and all seen pages """
     index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
     index_html += marko.convert(index.get('content', ''))
-    index_html += recent_list_html
+    index_html += make_recent_list(recent_list)
     
     sitemap_html = ''
 
@@ -307,8 +307,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
             'description': fatfile_description
         }}
         make_fatfile(fatfile_info, fatfile, frame, output_dir)
-    recent_list_html = make_recent_list(last_modified_pages)
-    make_sitemap(index, sitemap, recent_list_html, frame, output_dir)
+    make_sitemap(index, sitemap, last_modified_pages, frame, output_dir)
     copy_css_file(pages_dir, output_dir)
 
 
