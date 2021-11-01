@@ -25,10 +25,10 @@ The necessary format for your pages are [Markdown][] files with [YAML/Jekyll fro
 Create a directory named `_swiki` in your input directory. This is where you will put the following files.
 
     _swiki
-     ├- frame.html
-     ├- styles.css
-     ├- index.md
-     └- config.ini
+     ├─ frame.html
+     ├─ styles.css
+     ├─ index.md
+     └─ config.ini
 
 #### Frame
 
@@ -94,12 +94,15 @@ This will be prepended to the sitemap/index of your wiki.
 
 A `config.ini` file can be used to overwrite certain parser parameters. For example:
 
-    KeyOne = Value
-    KeyTwo = 123
+    key_one = Value
+    key_two = 123
 
 Key | Effect | Default Value
 --- | --- | ---
-`TabSize` | How many spaces a tab character wil be converted to when parsing the page content| 2
+`build_fatfile` | Whether to build the [fatfile](#fatfile) or not | `True`
+`recent_list` | Whether to build the [recent list](#recent-list) into the sitemap | `False`
+`recent_list_length` | How many items should be included in the [recent list](#recent-list) | `10`
+`tab_size` | How many spaces a tab character wil be converted to when parsing the page content | `2`
 
 ### Rendering
 
@@ -111,12 +114,18 @@ python3 swiki.py input_folder output_folder [flags]
 
 Flag | Effect
 --- | ---
---delete-current-html, -d | Non-recursively delete all existing HTML files in the build directory
---no-fatfile, -nf | Do not create [fatfile](#fatfile) on build
+`--delete-current-html`, `-d` | Non-recursively delete all existing HTML files in the build directory
+`--no-fatfile`, `-nf` | Do not create [fatfile](#fatfile) on build
+`--recent-list`, `-rl` | Create a [recent changes list](#recent-list)
+`--recent-list-length n`, `-rll n` | Set the length of the [recent list](#recent-list) to `n` entries
 
 ### Fatfile
 
 A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching and stumbling on new content.
+
+### Recent List
+
+A list of recent changes will be created and placed below the content found in `index.md`, if provided.
 
 ### Ignoring Files and Folders
 
@@ -144,7 +153,7 @@ This would render out five files, all using the frame:
 ## Future Improvements
 
 - Handle multiple pages with the same title. Show error that two pages cannot have the same title and one **will** be overridden. Don't let it fail silently!
-- Add a "recent changes" section.
 - Add tags for categorical linking by meta ideas, like "#activities", etc.
+- Replace current markdown parser with [mistune](https://github.com/lepture/mistune) and use the built-in Pygment lexer for handling code highlighting.
 
 [Markdown]: https://spec.commonmark.org/0.29/
