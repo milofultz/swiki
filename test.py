@@ -800,6 +800,26 @@ class MakeWikiTestCase(unittest.TestCase):
         test_css_path = os.path.join(self.test_output_folder, 'style.css')
         self.assertTrue(os.path.isfile(test_css_path))
 
+    def test_same_title(self):
+        # SET UP
+        duplicate_test_file_path = os.path.join(self.test_input_folder, 'test_duplicate.md')
+        duplicate_test_file_content = dedent("""\
+            ---
+            title: Example File
+            description: Example description.
+            ---
+            
+            Some content.""")
+        touch(duplicate_test_file_path, duplicate_test_file_content)
+
+        # TESTS
+        with self.assertRaises(RuntimeError) as e:
+            swiki.make_wiki(self.test_input_folder, self.test_output_folder,
+                            self.test_config)
+        actual_exception_message = str(e.exception)
+        expected_exception_message = f'''Page "Example File" with filename "example-file" conflicts with page "Example File" with filename "example-file".'''
+        self.assertEqual(expected_exception_message, actual_exception_message)
+
     def test_index(self):
         # SET UP
         test_index_file_path = os.path.join(self.test_input_folder, '_swiki', 'index.md')
