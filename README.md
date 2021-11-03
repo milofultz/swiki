@@ -152,8 +152,7 @@ This would render out five files, all using the frame:
 
 ## Future Improvements
 
-- Handle multiple pages with the same title. Show error that two pages cannot have the same title and one **will** be overridden. Don't let it fail silently!
 - Add tags for categorical linking by meta ideas, like "#activities", etc.
-- Replace current markdown parser with [mistune](https://github.com/lepture/mistune) and use the built-in Pygment lexer for handling code highlighting.
+- Replace current Markdown parser with [mistune](https://github.com/lepture/mistune) and use the built-in Pygment lexer for handling code highlighting.
 
 [Markdown]: https://spec.commonmark.org/0.29/
