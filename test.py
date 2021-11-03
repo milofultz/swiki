@@ -1,4 +1,3 @@
-from collections import defaultdict
 import os
 import shutil
 from textwrap import dedent
@@ -414,11 +413,22 @@ class MakePageDictTestCase(unittest.TestCase):
 class SitemapTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.test_page_dict = {
+        cls.first_test_page_dict = {
             'folder': 'sub',
             'metadata': {
-                'title': 'yeah',
-                'description': 'uh huh',
+                'title': 'First Test',
+                'description': 'First Test',
+                'last_modified': '202001010000',
+            },
+            'content': 'The content',
+            'links': [],
+            'index': True
+        }
+        cls.second_test_page_dict = {
+            'folder': 'sub',
+            'metadata': {
+                'title': 'Second Test',
+                'description': 'Second Test',
                 'last_modified': '202001010000',
             },
             'content': 'The content',
@@ -427,18 +437,18 @@ class SitemapTestCase(unittest.TestCase):
         }
 
     def test_empty_folder(self):
-        test_sitemap = defaultdict()
-        test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'missing', test_sitemap)
-        result_sitemap = defaultdict()
-        result_sitemap['missing'] = [self.test_page_dict]
+        test_sitemap = dict()
+        test_sitemap = swiki.add_page_to_sitemap(self.first_test_page_dict, 'missing', test_sitemap)
+        result_sitemap = dict()
+        result_sitemap['missing'] = [self.first_test_page_dict]
         self.assertDictEqual(test_sitemap, result_sitemap)
 
     def test_existing_folder(self):
-        test_sitemap = defaultdict()
-        test_sitemap['existing'] = [self.test_page_dict]
-        test_sitemap = swiki.add_page_to_sitemap(self.test_page_dict, 'existing', test_sitemap)
-        result_sitemap = defaultdict()
-        result_sitemap['existing'] = [self.test_page_dict, self.test_page_dict]
+        test_sitemap = dict()
+        test_sitemap['existing'] = [self.first_test_page_dict]
+        test_sitemap = swiki.add_page_to_sitemap(self.second_test_page_dict, 'existing', test_sitemap)
+        result_sitemap = dict()
+        result_sitemap['existing'] = [self.first_test_page_dict, self.second_test_page_dict]
         self.assertDictEqual(test_sitemap, result_sitemap)
 
 
