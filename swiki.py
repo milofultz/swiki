@@ -227,7 +227,11 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
                                                           'filename': page_filename})
 
             # add page info to pages dict
-            if pages.get(page_filename):
+            if pages.get(page_filename) and pages[page_filename].get('folder') is not None:
+                current_folder = page.get('folder') + '/' if page.get('folder') else ''
+                existing_folder = rel_path + '/' if rel_path else ''
+                raise RuntimeError(f'''Page "{current_folder}{page['metadata'].get('title')}" with filename "{page_filename}" conflicts with page "{existing_folder}{pages[page_filename]['metadata'].get('title')}" with filename "{page_filename}".''')
+            elif pages.get(page_filename):
                 pages[page_filename] |= page
             else:
                 pages[page_filename] = page
