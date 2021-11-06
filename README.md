@@ -15,10 +15,14 @@ The Swiki takes in any folder of markdown files and a `frame.html` file to build
 
 The necessary format for your pages are [Markdown][] files with [YAML/Jekyll front matter](https://jekyllrb.com/docs/front-matter/).
 
-* The front matter currently uses the `title` and `description` fields. Note that these are case sensitive.
+* The front matter currently uses the `title` and `description` fields. Note that these are case sensitive. Each page must have a unique name, once all [special characters](#special-characters) have been removed.
 * Wiki-style links use `{{double curly braces}}` and are case insensitive. They can be made two ways (note that they reference the *title* in the front matter, not the *filename*):
     * `{{example}}` - Displays the text 'example' and goes to the page whose title is 'example'.
     * `{{shown text|example}}` - Displays the text 'shown text' and goes to the page whose title is 'example'.
+
+#### Special Characters
+
+These special characters in page titles end up being removed when converting to a filename: `/()'".!?,`
 
 ### `_swiki` Directory
 
@@ -139,7 +143,7 @@ title: Rendering A Page
 description: This will become the meta description.
 ---
 
-This is the content of the {{Markdown}} file. This {{Markdown reference|markdown}} doesn't exist, but the {{page}} will.
+This is the content of the {{Markdown}} file. This {{Markdown reference|Markdown}} doesn't exist, but the {{page}} will.
 ```
 
 This would render out five files, all using the frame:
