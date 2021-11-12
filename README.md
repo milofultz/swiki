@@ -158,5 +158,6 @@ This would render out five files, all using the frame:
 
 - Add tags for categorical linking by meta ideas, like "#activities", etc.
 - Replace current Markdown parser with [mistune](https://github.com/lepture/mistune) and use the built-in Pygment lexer for handling code highlighting.
+- Handle colons in titles and descriptions; YAML can't handle them without quoting them.
 
 [Markdown]: https://spec.commonmark.org/0.29/
