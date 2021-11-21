@@ -169,9 +169,9 @@ class BuildUtilitiesTestCase(unittest.TestCase):
 
     def test_copy_css_file_if_exists(self):
         # SET UP
-        test_css = os.path.join(self.test_path, '_swiki', 'test.css')
         test_swiki = os.path.join(self.test_path, '_swiki')
         os.mkdir(test_swiki)
+        test_css = os.path.join(test_swiki, 'test.css')
         touch(test_css, 'test')
         test_output = os.path.join(self.test_path, 'output')
         os.mkdir(test_output)
