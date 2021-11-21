@@ -24,6 +24,10 @@ The necessary format for your pages are [Markdown][] files with [YAML/Jekyll fro
 
 These special characters in page titles end up being removed when converting to a filename: `/()'".!?,`
 
+#### Non-Markdown Files
+
+Any files that exist in your input directory or any subdirectories will be copied to the root directory of the output directory.
+
 ### `_swiki` Directory
 
 Create a directory named `_swiki` in your input directory. This is where you will put the following files.

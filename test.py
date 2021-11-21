@@ -192,6 +192,32 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         self.assertEqual(os.listdir(test_swiki), [])
         self.assertEqual(os.listdir(test_output), [])
 
+    def test_copy_media_if_exists(self):
+        # SET UP
+        test_media_file_1 = os.path.join(self.test_path, 'file_1.txt')
+        touch(test_media_file_1, 'test')
+        test_media_file_2 = os.path.join(self.test_path, 'file_2.txt')
+        touch(test_media_file_2, 'test')
+
+        test_output = os.path.join(self.test_path, 'output')
+        os.mkdir(test_output)
+
+        # TEST
+        swiki.copy_media(self.test_path, test_media_file_1, test_output)
+        swiki.copy_media(self.test_path, test_media_file_2, test_output)
+        self.assertTrue(os.path.isfile(os.path.join(test_output, 'file_1.txt')))
+        self.assertTrue(os.path.isfile(os.path.join(test_output, 'file_2.txt')))
+
+    def test_copy_media_if_not_exists(self):
+        # SET UP
+        test_output = os.path.join(self.test_path, 'output')
+        os.mkdir(test_output)
+
+        # TEST
+        with self.assertRaises(FileNotFoundError):
+            swiki.copy_media(self.test_path, 'nonexistent_file.txt', test_output)
+        self.assertEqual(os.listdir(test_output), [])
+
     @classmethod
     def tearDownClass(cls):
         if os.path.isdir(cls.test_path):
@@ -819,6 +845,19 @@ class MakeWikiTestCase(unittest.TestCase):
         actual_exception_message = str(e.exception)
         expected_exception_message = f'''Page "Example File" with filename "example-file" conflicts with page "Example File" with filename "example-file".'''
         self.assertEqual(expected_exception_message, actual_exception_message)
+
+    def test_same_filename_for_non_pages(self):
+        # SET UP
+        test_media_file_1 = os.path.join(self.test_input_folder, 'file_1.txt')
+        touch(test_media_file_1, 'test')
+        test_media_folder = os.path.join(self.test_input_folder, 'another_folder')
+        os.mkdir(test_media_folder)
+        test_media_file_2 = os.path.join(test_media_folder, 'file_1.txt')
+        touch(test_media_file_2, 'test')
+
+        # TEST
+        with self.assertRaises(RuntimeError):
+            swiki.make_wiki(self.test_input_folder, self.test_output_folder, self.test_config)
 
     def test_index(self):
         # SET UP

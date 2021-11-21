@@ -12,6 +12,7 @@ import frontmatter
 import modules.link_utilities as links
 
 
+IGNORE = ['.DS_Store']
 RESERVED = ['index', 'fatfile']
 
 marko = Markdown(extensions=['gfm'])
@@ -50,6 +51,12 @@ def copy_css_file(pages_dir: str, output_dir: str):
     for file in os.listdir(swiki_folder):
         if os.path.splitext(file)[1] == '.css':
             shutil.copy2(os.path.join(swiki_folder, file), os.path.join(output_dir, file))
+            return
+
+
+def copy_media(current_folder: str, media_file: str, output_dir: str):
+    """ If non-Markdown file exists in folder, copy to output """
+    shutil.copy2(os.path.join(current_folder, media_file), output_dir)
 
 
 ################
@@ -184,6 +191,7 @@ def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
 def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     """ Create flat wiki out of all pages """
     pages = dict()
+    media_files = set()
 
     ff_bytes = 0
     last_modified_pages = list()
@@ -199,7 +207,13 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         for file in files:
             filename, extension = os.path.splitext(file)
             # Ignore all files with preceding underscore or non-Markdown files
-            if filename[0] == '_' or extension != '.md':
+            if filename[0] == '_' or filename in IGNORE:
+                continue
+            if extension != '.md':
+                if file in media_files:
+                    raise RuntimeError(f'''File "{rel_path}/{file}" conflicts with another file "{file}".''')
+                copy_media(subfolder, file, output_dir)
+                media_files.add(file)
                 continue
             page = make_page_dict(pages_dir, rel_path, file)
             page_filename = links.kebabify(page['metadata'].get('title') or filename)
