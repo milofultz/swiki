@@ -81,7 +81,7 @@ Here is an example that includes basic CSS to make a generally good looking and 
 
 #### CSS File
 
-Instead of using a `<style>` tag in your frame file for styling, you can also link in a CSS file. If you include a CSS file in the `_swiki` folder, it will be copied over to the root of your output folder. For instance, if you had a file named `styles.css` in your `_swiki` folder, you could replace your `<style>...</style>` tags with a `<link rel="stylesheet" href="./styles.css">`.
+Instead of using a `<style>` tag in your frame file for styling, you can also link in CSS files. If you include CSS files in the `_swiki` folder, it will be copied over to the root of your output folder. For instance, if you had a file named `styles.css` and a file named `altstyle.css` in your `_swiki` folder, you could replace your `<style>...</style>` tags with `<link rel="stylesheet" href="./styles.css"><link rel="stylesheet alternate" href="./altstyle.css" title="Cool style">`.
 
 #### Index/Sitemap
 
