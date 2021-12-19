@@ -44,14 +44,13 @@ def delete_current_html(directory: str):
 
 
 def copy_css_file(pages_dir: str, output_dir: str):
-    """ If CSS file in _swiki directory, copy to output """
+    """ If CSS files in _swiki directory, copy to output """
     swiki_folder = os.path.join(pages_dir, '_swiki')
     if not os.path.isdir(swiki_folder):
         return
     for file in os.listdir(swiki_folder):
         if os.path.splitext(file)[1] == '.css':
             shutil.copy2(os.path.join(swiki_folder, file), os.path.join(output_dir, file))
-            return
 
 
 def copy_media(current_folder: str, media_file: str, output_dir: str):
