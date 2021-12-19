@@ -180,6 +180,22 @@ class BuildUtilitiesTestCase(unittest.TestCase):
         swiki.copy_css_file(self.test_path, test_output)
         self.assertTrue(os.path.isfile(os.path.join(test_output, 'test.css')))
 
+    def test_copy_css_files_if_multiple_exist(self):
+        # SET UP
+        test_swiki = os.path.join(self.test_path, '_swiki')
+        os.mkdir(test_swiki)
+        test_css_1 = os.path.join(test_swiki, 'test1.css')
+        touch(test_css_1, 'test')
+        test_css_2 = os.path.join(test_swiki, 'test2.css')
+        touch(test_css_2, 'test')
+        test_output = os.path.join(self.test_path, 'output')
+        os.mkdir(test_output)
+
+        # TEST
+        swiki.copy_css_file(self.test_path, test_output)
+        self.assertTrue(os.path.isfile(os.path.join(test_output, 'test1.css')))
+        self.assertTrue(os.path.isfile(os.path.join(test_output, 'test2.css')))
+
     def test_copy_css_file_if_not_exists(self):
         # SET UP
         test_swiki = os.path.join(self.test_path, '_swiki')
