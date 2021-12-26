@@ -589,32 +589,33 @@ class MakeFatfileTestCase(unittest.TestCase):
                            self.test_frame, self.test_path)
         with open(self.test_fatfile_path, 'r') as f:
             actual_fatfile = f.read()
-        expected_fatfile = dedent("""\
+        expected_fatfile = dedent(f"""\
             <html>
                 <head>
                     <title>yeah</title>
                     <meta name="description" content="uh huh">
                 </head>
                 <body>
-                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>Test content</section></main>
+                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>{test_fatfile_content}</section></main>
                 </body>
             </html>""")
         self.assertEqual(expected_fatfile, actual_fatfile)
 
     def test_remove_ids(self):
-        test_fatfile_content = '<p id="remove-this">Test content</p>'
+        test_text = 'Test content'
+        test_fatfile_content = f'<p id="remove-this">{test_text}</p>'
         swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
                            self.test_frame, self.test_path)
         with open(self.test_fatfile_path, 'r') as f:
             actual_fatfile = f.read()
-        expected_fatfile = dedent("""\
+        expected_fatfile = dedent(f"""\
             <html>
                 <head>
                     <title>yeah</title>
                     <meta name="description" content="uh huh">
                 </head>
                 <body>
-                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><p>Test content</p></section></main>
+                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><p>{test_text}</p></section></main>
                 </body>
             </html>""")
         self.assertEqual(expected_fatfile, actual_fatfile)
@@ -768,7 +769,7 @@ class MakeSitemapTestCase(unittest.TestCase):
 
 class MakeWikiTestCase(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         cls.test_path = make_test_directory()
         cls.test_input_folder = os.path.join(cls.test_path, 'input')
         os.mkdir(cls.test_input_folder)
@@ -899,9 +900,6 @@ class MakeWikiTestCase(unittest.TestCase):
         with open(output_index_file_path, 'r') as f:
             actual_index_file_content = f.read()
         self.assertEqual(expected_index_file_content, actual_index_file_content)
-
-        # TEAR DOWN
-        os.remove(test_index_file_path)
 
     def test_fatfile(self):
         fatfile_config = {
