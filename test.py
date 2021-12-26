@@ -923,6 +923,28 @@ class MakeWikiTestCase(unittest.TestCase):
             actual_fatfile_file_content = f.read()
         self.assertEqual(expected_fatfile_file_content, actual_fatfile_file_content)
 
+    def test_special_chars_in_title_with_fatfile(self):
+        # SET UP
+        test_file_path_1 = os.path.join(self.test_input_folder, 'cplusplus.md')
+        test_file_content_1 = dedent(f"""\
+            ---
+            title: Regex Doesn't Like These Special Characters
+            description: Example description.
+            ---
+            
+            An {{{{ellipsis...}}}} What about {{{{C++}}}}?""")
+        touch(test_file_path_1, test_file_content_1)
+        fatfile_config = {
+            **self.test_config,
+            'build_fatfile': True
+        }
+
+        # TESTS
+        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
+                        fatfile_config)
+        # should not throw from there being regex special characters in the title
+        self.assertTrue(True)
+
     def test_recent(self):
         test_recent_config = {'tab_size': 2, 'build_fatfile': False,
                               'recent_list': True, 'recent_list_length': 10}
