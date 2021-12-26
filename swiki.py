@@ -296,7 +296,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         content = add_last_modified(content, info['metadata'].get('last_modified'))
 
         if build_config.get('build_fatfile'):
-            fatfile_content = re.sub(rf'(?<=<h1 id="title">){info["metadata"].get("title")}(?=</h1>)',
+            fatfile_content = re.sub(rf'(?<=<h1 id="title">){re.escape(info["metadata"].get("title"))}(?=</h1>)',
                                      f'<a href="{filename}.html">{info["metadata"].get("title")}</a>',
                                      content)
             fatfile += place_in_container('article', None, fatfile_content)
