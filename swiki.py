@@ -331,12 +331,18 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description='Create wiki at output dir from input dir.')
-    argparser.add_argument('input_dir', metavar='input', type=str, help='the path to the input directory')
-    argparser.add_argument('output_dir', metavar='output', type=str, help='the path to the output directory')
-    argparser.add_argument('--delete-current-html', '-d', action='store_true', help='delete all HTML in output directory before building')
-    argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile", help='do not create fatfile on build')
-    argparser.add_argument('--recent-list', '-rl', default=False, action="store_true", help='create most recently modified pages list on index')
-    argparser.add_argument('--recent-list-length', '-rll', default=10, help='length of most recently modified pages list')
+    argparser.add_argument('input_dir', metavar='input', type=str,
+                           help='the path to the input directory')
+    argparser.add_argument('output_dir', metavar='output', type=str,
+                           help='the path to the output directory')
+    argparser.add_argument('--delete-current-html', '-d', action='store_true',
+                           help='delete all HTML in output directory before building')
+    argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile",
+                           help='do not create fatfile on build')
+    argparser.add_argument('--recent-list', '-rl', default=False, action="store_true",
+                           help='create most recently modified pages list on index')
+    argparser.add_argument('--recent-list-length', '-rll', default=10,
+                           help='length of most recently modified pages list')
     args = argparser.parse_args()
 
     if not os.path.isdir(args.input_dir):
