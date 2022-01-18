@@ -343,6 +343,8 @@ if __name__ == "__main__":
                            help='create most recently modified pages list on index')
     argparser.add_argument('--recent-list-length', '-rll', default=10,
                            help='length of most recently modified pages list')
+    argparser.add_argument('-v', '--verbose', action='count', default=0,
+                           help='print debug information during build. Use -vv for more details')
     args = argparser.parse_args()
 
     if not os.path.isdir(args.input_dir):
@@ -358,6 +360,7 @@ if __name__ == "__main__":
         'recent_list': args.recent_list,
         'recent_list_length': args.recent_list_length,
     }
+
     config_fp = os.path.join(args.input_dir, '_swiki', 'config.ini')
     if os.path.isfile(config_fp):
         update_config(config, config_fp)

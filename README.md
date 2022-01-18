@@ -125,7 +125,8 @@ Flag | Effect
 `--delete-current-html`, `-d` | Non-recursively delete all existing HTML files in the build directory
 `--no-fatfile`, `-nf` | Do not create [fatfile](#fatfile) on build
 `--recent-list`, `-rl` | Create a [recent changes list](#recent-list)
-`--recent-list-length n`, `-rll n` | Set the length of the [recent list](#recent-list) to `n` entries
+`--recent-list-length [n]`, `-rll [n]` | Set the length of the [recent list](#recent-list) to `n` entries
+`--verbose`, `-v` | Print debug information during build. Use `-vv` for more details
 
 ### Fatfile
 
