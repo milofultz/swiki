@@ -26,7 +26,7 @@ These special characters in page titles end up being removed when converting to 
 
 #### Non-Markdown Files
 
-Any files that exist in your input directory or any subdirectories will be copied to the root directory of the output directory.
+Any files that exist in your input directory or any subdirectories will be copied to the root directory of the output directory. Useful for linking to images, code files, or anything else you want to link to directly.
 
 ### `_swiki` Directory
 
