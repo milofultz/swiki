@@ -126,7 +126,7 @@ Flag | Effect
 `--no-fatfile`, `-nf` | Do not create [fatfile](#fatfile) on build
 `--recent-list`, `-rl` | Create a [recent changes list](#recent-list)
 `--recent-list-length [n]`, `-rll [n]` | Set the length of the [recent list](#recent-list) to `n` entries
-`--verbose`, `-v` | Print debug information during build. Use `-vv` for more details
+`--verbose`, `-v` | Print debug information during build to `build.log`. Use `-vv` for (many) more details
 
 ### Fatfile
 

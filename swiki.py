@@ -371,7 +371,10 @@ if __name__ == "__main__":
     args = argparser.parse_args()
 
     # Set log level to either INFO or DEBUG, if -v or -vv
-    logging.basicConfig(level=logging.WARN - args.verbose * 10)
+    logging.basicConfig(
+        filename=f"build.log",
+        level=logging.WARN - args.verbose * 10
+    )
 
     if not os.path.isdir(args.input_dir):
         sys.exit(f'Input folder not found: {args.input_dir}')
