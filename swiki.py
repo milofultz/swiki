@@ -26,6 +26,11 @@ marko = Markdown(extensions=['gfm'])
 
 def update_config(internal_config: dict, external_config_fp: str):
     """ Update default config with any user values """
+    logger = logging.getLogger('update_config')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          internal_config: {internal_config}\n\
+          external_config_fp: {external_config_fp}'))
     with open(external_config_fp, 'r') as f:
         config_file = f.read()
     for line in config_file.split('\n'):
@@ -39,6 +44,10 @@ def update_config(internal_config: dict, external_config_fp: str):
 
 def delete_current_html(directory: str):
     """ Delete all existing HTML files in directory """
+    logger = logging.getLogger('delete_current_html')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          directory: {directory}'))
     for file in os.listdir(directory):
         if os.path.splitext(file)[1] == '.html':
             os.remove(os.path.join(directory, file))
@@ -46,6 +55,11 @@ def delete_current_html(directory: str):
 
 def copy_css_file(pages_dir: str, output_dir: str):
     """ If CSS files in _swiki directory, copy to output """
+    logger = logging.getLogger('copy_css_file')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          pages_dir: {pages_dir}\n\
+          output_dir: {output_dir}'))
     swiki_folder = os.path.join(pages_dir, '_swiki')
     if not os.path.isdir(swiki_folder):
         return
@@ -56,6 +70,12 @@ def copy_css_file(pages_dir: str, output_dir: str):
 
 def copy_media(current_folder: str, media_file: str, output_dir: str):
     """ If non-Markdown file exists in folder, copy to output """
+    logger = logging.getLogger('copy_media')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          current_folder: {current_folder}\n\
+          media_file: {media_file}\n\
+          output_dir: {output_dir}'))
     shutil.copy2(os.path.join(current_folder, media_file), output_dir)
 
 
@@ -66,11 +86,22 @@ def copy_media(current_folder: str, media_file: str, output_dir: str):
 
 def place_in_container(element: str, html_id: str or None, content: str) -> str:
     """ Place content in container with ID """
+    logger = logging.getLogger('place_in_container')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          element: {element}\n\
+          html_id: {html_id}\n\
+          content: {content}'))
     id_attr = f' id="{html_id}"' if html_id else ''
     return f'<{element}{id_attr}>{content}</{element}>'
 
 
 def add_last_modified(content: str, lm_text: str) -> str:
+    logger = logging.getLogger('add_last_modified')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          content: {content}\n\
+          lm_text: {lm_text}'))
     if not lm_text:
         return content
     return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
@@ -78,6 +109,13 @@ def add_last_modified(content: str, lm_text: str) -> str:
 
 def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) -> dict:
     """ Make dict of all page specific data """
+    logger = logging.getLogger('make_page_dict')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          root: {root}\n\
+          rel_path: {rel_path}\n\
+          file: {file}\n\
+          is_index: {is_index}'))
     page = {'folder': rel_path}
     fp = os.path.join(root, rel_path, file)
     with open(fp, 'r') as f:
@@ -92,6 +130,12 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
 
 
 def add_to_last_modified_pages(new_page: dict, last_modified: list, max_length: int) -> list:
+    logger = logging.getLogger('add_to_last_modified_pages')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          new_page: {new_page}\n\
+          last_modified: {last_modified}\n\
+          max_length: {max_length}'))
     end = min(len(last_modified), max_length)
 
     index = 0
@@ -110,6 +154,12 @@ def add_to_last_modified_pages(new_page: dict, last_modified: list, max_length: 
 
 def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
     """ Add page info to sitemap """
+    logger = logging.getLogger('add_page_to_sitemap')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          page_info: {page_info}\n\
+          folder: {folder}\n\
+          sitemap: {sitemap}'))
     updated_folder = sitemap.get(folder, [])
     updated_folder.append(page_info)
     sitemap[folder] = updated_folder
@@ -118,6 +168,12 @@ def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
 
 def fill_frame(frame: str, content: str, metadata: dict) -> str:
     """ Fill out HTML frame with page information """
+    logger = logging.getLogger('fill_frame')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          frame: {frame}\n\
+          content: {content}\n\
+          metadata: {metadata}'))
     frame = frame.replace('{{title}}', metadata.get('title', ''))
     frame = frame.replace('{{description}}', metadata.get('description', ''))
     frame = frame.replace('{{content}}', content)
@@ -126,6 +182,13 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
 
 def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
     """ Make fatfile out of content of every page """
+    logger = logging.getLogger('make_fatfile')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          info: {info}\n\
+          fatfile: {fatfile}\n\
+          frame: {frame}\n\
+          output_dir: {output_dir}'))
     fatfile = re.sub(re.compile(r'\sid=".*?"'), '', fatfile)
     fatfile = '<h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>' + fatfile
     fatfile = place_in_container('section', 'fatfile', fatfile)
@@ -136,6 +199,10 @@ def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
 
 
 def make_recent_list(last_modified: list) -> str:
+    logger = logging.getLogger('make_recent_list')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          last_modified: {last_modified}'))
     if len(last_modified) == 0:
         return ''
 
@@ -150,6 +217,13 @@ def make_recent_list(last_modified: list) -> str:
 
 def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
     """ Make sitemap out of index and all seen pages """
+    logger = logging.getLogger('make_sitemap')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          index: {index}\n\
+          sitemap: {sitemap}\n\
+          recent_list: {recent_list}\n\
+          frame: {frame}'))
     index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
     index_html += marko.convert(index.get('content', ''))
     index_html += make_recent_list(recent_list)
@@ -157,6 +231,11 @@ def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
     sitemap_html = ''
 
     def convert_folder_to_html(folder_name: str, display_name: str = None) -> str:
+        inner_logger = logger.getChild('convert_folder_to_html')
+        inner_logger.debug(dedent(f'\
+            Running with:\n\
+              folder_name: {folder_name}\n\
+              display_name: {display_name}'))
         if not display_name:
             display_name = folder_name if folder_name else "[root]"
         display_name = display_name.replace('/', '/<wbr/>')
@@ -192,7 +271,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     """ Create flat wiki out of all pages """
     logger = logging.getLogger('make_wiki')
     logger.debug(dedent(f'\
-        Running `make_wiki` with\n\
+        Running with\n\
           pages_dir: {pages_dir}\n\
           output_dir: {output_dir}\n\
           build_config: {build_config}'))
