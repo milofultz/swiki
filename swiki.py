@@ -190,6 +190,12 @@ def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
 
 def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     """ Create flat wiki out of all pages """
+    logger = logging.getLogger('make_wiki')
+    logger.debug(dedent(f'\
+        Running `make_wiki` with\n\
+          pages_dir: {pages_dir}\n\
+          output_dir: {output_dir}\n\
+          build_config: {build_config}'))
     pages = dict()
     media_files = set()
 
@@ -200,16 +206,22 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         frame_bytes = len(f.read().encode('utf-8'))
 
     for subfolder, _, files in os.walk(pages_dir):
+        logger.info(f'Folder: {subfolder}')
         rel_path = subfolder.replace(pages_dir, '').lstrip('/')
+        logger.debug(f'New relative path: {rel_path}')
         # Ignore all folders with preceding underscore
         if rel_path and rel_path[0] == '_':
             continue
         for file in files:
+            logger.info(f'File: {file}')
             filename, extension = os.path.splitext(file)
+            logger.debug(f'Filename and extension: {filename} {extension}')
             # Ignore all files with preceding underscore or non-Markdown files
             if filename[0] == '_' or filename in IGNORE:
+                logger.debug(f'File skipped: {file}')
                 continue
             if extension != '.md':
+                logger.debug(f'Media file found: {file}')
                 if file in media_files:
                     raise RuntimeError(f'''File "{rel_path}/{file}" conflicts with another file "{file}".''')
                 copy_media(subfolder, file, output_dir)
@@ -218,6 +230,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
             page = make_page_dict(pages_dir, rel_path, file)
             page_filename = links.kebabify(page['metadata'].get('title') or filename)
             if page_filename in RESERVED:
+                logger.debug(f'Filename in RESERVED: {page_filename}')
                 page_filename += '_'
 
             ff_bytes += len(page.get('content', '').encode('utf-8')) + frame_bytes
@@ -250,11 +263,14 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
             else:
                 pages[page_filename] = page
 
+            logger.debug(f'Page dict created: {pages[page_filename]}')
+
     swiki_dir = os.path.join(pages_dir, '_swiki')
 
     # If there is an index file, build page dict
     if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
         pages['{{SITE INDEX}}'] = make_page_dict(pages_dir, '_swiki', 'index.md', True)
+        logger.debug(f'Index file: {pages["{{SITE INDEX}}"]}')
 
     # Load frame file
     with open(os.path.join(swiki_dir, 'frame.html'), 'r') as f:
@@ -269,12 +285,14 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         else:
             ff_size = f"~{round(ff_bytes / 1_000_000, 2)}mb"
         frame = frame.replace('{{ff_size}}', ff_size)
+        logger.debug(f'Filled frame: {frame}')
 
     # Build all files and populate sitemap dict
     sitemap = dict()
     fatfile = ''
     index = {'metadata': dict()}
     for filename, info in pages.items():
+        logger.info(f'Page: {filename}')
         # If it's the index/sitemap page, don't build it
         if info.get('index'):
             index = info
@@ -285,6 +303,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         info['metadata'] = {'title': info['metadata'].get('title', filename),
                             'description': info['metadata'].get('description', ''),
                             'last_modified': info['metadata'].get('last_modified', '')}
+        logger.debug(f'Page metadata: {info["metadata"]}')
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
         content = content.replace('\t', ' ' * build_config.get('tab_size'))
@@ -306,6 +325,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         content = place_in_container('main', 'main', content)
         filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
 
+        logger.debug(f'Writing file: {filename}.html')
         with open(os.path.join(output_dir, f'{filename}.html'), 'w') as f:
             f.write(filled_frame)
 
@@ -315,6 +335,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
                                       sitemap)
 
     if build_config.get('build_fatfile'):
+        logger.info(f'Building fatfile')
         fatfile_title = 'Fatfile'
         if site_title := index["metadata"].get("title"):
             fatfile_title = f'{site_title} - Fatfile'
@@ -325,8 +346,9 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         }}
         make_fatfile(fatfile_info, fatfile, frame, output_dir)
     filled_frame = make_sitemap(index, sitemap, last_modified_pages, frame)
+    logger.debug(f'Writing sitemap: index.html')
     with open(os.path.join(output_dir, 'index.html'), 'w') as f:
-            f.write(filled_frame)
+        f.write(filled_frame)
     copy_css_file(pages_dir, output_dir)
 
 
