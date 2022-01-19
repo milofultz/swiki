@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import re
 import shutil
@@ -346,6 +347,9 @@ if __name__ == "__main__":
     argparser.add_argument('-v', '--verbose', action='count', default=0,
                            help='print debug information during build. Use -vv for more details')
     args = argparser.parse_args()
+
+    # Set log level to either INFO or DEBUG, if -v or -vv
+    logging.basicConfig(level=logging.WARN - args.verbose * 10)
 
     if not os.path.isdir(args.input_dir):
         sys.exit(f'Input folder not found: {args.input_dir}')
