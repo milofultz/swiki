@@ -16,6 +16,9 @@ import modules.link_utilities as links
 IGNORE = ['.DS_Store']
 RESERVED = ['index']
 
+DATE_FORMAT = '%Y%m%d%H%M'
+STUBS_FOLDER_NAME = 'Wiki Stubs'
+
 marko = Markdown(extensions=['gfm'])
 
 
@@ -31,6 +34,7 @@ def update_config(internal_config: dict, external_config_fp: str):
         Running with:\n\
           internal_config: {internal_config}\n\
           external_config_fp: {external_config_fp}'))
+
     with open(external_config_fp, 'r') as f:
         config_file = f.read()
     for line in config_file.split('\n'):
@@ -48,6 +52,7 @@ def delete_current_html(directory: str):
     logger.debug(dedent(f'\
         Running with:\n\
           directory: {directory}'))
+
     for file in os.listdir(directory):
         if os.path.splitext(file)[1] == '.html':
             os.remove(os.path.join(directory, file))
@@ -60,6 +65,7 @@ def copy_css_file(pages_dir: str, output_dir: str):
         Running with:\n\
           pages_dir: {pages_dir}\n\
           output_dir: {output_dir}'))
+
     swiki_folder = os.path.join(pages_dir, '_swiki')
     if not os.path.isdir(swiki_folder):
         return
@@ -76,6 +82,7 @@ def copy_media(current_folder: str, media_file: str, output_dir: str):
           current_folder: {current_folder}\n\
           media_file: {media_file}\n\
           output_dir: {output_dir}'))
+
     shutil.copy2(os.path.join(current_folder, media_file), output_dir)
 
 
@@ -92,30 +99,32 @@ def place_in_container(element: str, html_id: str or None, content: str) -> str:
           element: {element}\n\
           html_id: {html_id}\n\
           content: {content}'))
+
     id_attr = f' id="{html_id}"' if html_id else ''
     return f'<{element}{id_attr}>{content}</{element}>'
 
 
-def add_last_modified(content: str, lm_text: str) -> str:
+def add_last_modified(content: str, last_modified: time) -> str:
     logger = logging.getLogger('add_last_modified')
     logger.debug(dedent(f'\
         Running with:\n\
           content: {content}\n\
-          lm_text: {lm_text}'))
-    if not lm_text:
+          last_modified: {last_modified}'))
+
+    if last_modified == time.gmtime(0):
         return content
-    return f'{content}\n<p class="last-modified">Last modified: {lm_text}</p>'
+    return f'{content}\n<p class="last-modified">Last modified: {time.strftime(DATE_FORMAT, last_modified)}</p>'
 
 
-def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) -> dict:
+def make_page_dict(root: str, rel_path: str, file: str) -> dict:
     """ Make dict of all page specific data """
     logger = logging.getLogger('make_page_dict')
     logger.debug(dedent(f'\
         Running with:\n\
           root: {root}\n\
           rel_path: {rel_path}\n\
-          file: {file}\n\
-          is_index: {is_index}'))
+          file: {file}'))
+
     page = {'folder': rel_path}
     fp = os.path.join(root, rel_path, file)
     with open(fp, 'r') as f:
@@ -123,47 +132,40 @@ def make_page_dict(root: str, rel_path: str, file: str, is_index: bool = False) 
     page['metadata'], page['content'] = frontmatter.parse(file_contents)
     page['metadata']['description'] = page['metadata'].get('description') or ''
     last_modified = time.gmtime(os.path.getmtime(fp))
-    page['metadata']['last_modified'] = time.strftime("%Y%m%d%H%M", last_modified)
+    page['metadata']['last_modified'] = last_modified
     page['links'] = links.get_local(page.get('content'))
-    page['index'] = True if is_index else False
     return page
 
 
-def add_to_last_modified_pages(new_page: dict, last_modified: list, max_length: int) -> list:
-    logger = logging.getLogger('add_to_last_modified_pages')
-    logger.debug(dedent(f'\
-        Running with:\n\
-          new_page: {new_page}\n\
-          last_modified: {last_modified}\n\
-          max_length: {max_length}'))
-    end = min(len(last_modified), max_length)
-
-    index = 0
-    while index < end:
-        current_lm = last_modified[index]['metadata']['last_modified']
-        new_lm = new_page['metadata']['last_modified']
-        if current_lm < new_lm:
-            break
-        index += 1
-
-    if index < max_length:
-        last_modified.insert(index, new_page)
-
-    return last_modified[:max_length]
-
-
-def add_page_to_sitemap(page_info: dict, folder: str, sitemap: dict):
+def add_page_to_sitemap(title: str, folder: str, sitemap: dict):
     """ Add page info to sitemap """
     logger = logging.getLogger('add_page_to_sitemap')
     logger.debug(dedent(f'\
         Running with:\n\
-          page_info: {page_info}\n\
+          title: {title}\n\
           folder: {folder}\n\
           sitemap: {sitemap}'))
-    updated_folder = sitemap.get(folder, [])
-    updated_folder.append(page_info)
-    sitemap[folder] = updated_folder
+
+    if not sitemap.get(folder):
+        sitemap[folder] = []
+    sitemap[folder].append(title)
     return sitemap
+
+
+def load_frame(swiki_dir: str) -> str:
+    logger = logging.getLogger('load_frame')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          swiki_dir: {swiki_dir}'))
+
+    with open(os.path.join(swiki_dir, 'frame.html'), 'r') as f:
+        frame = f.read()
+    # Remove extra space in frame code
+    frame = re.sub(r'(?<=\n)\s*', '', frame)
+    frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
+    frame = re.sub(r'(?<=[;{}(*/)])[\s]*', '', frame)
+
+    return frame
 
 
 def fill_frame(frame: str, content: str, metadata: dict) -> str:
@@ -174,43 +176,88 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
           frame: {frame}\n\
           content: {content}\n\
           metadata: {metadata}'))
+
     frame = frame.replace('{{title}}', metadata.get('title', ''))
     frame = frame.replace('{{description}}', metadata.get('description', ''))
     frame = frame.replace('{{content}}', content)
     return frame
 
 
-def make_recent_list(last_modified: list) -> str:
-    logger = logging.getLogger('make_recent_list')
+def format_recent_list(pages: dict, max_length: int) -> str:
+    logger = logging.getLogger('format_recent_list')
     logger.debug(dedent(f'\
         Running with:\n\
-          last_modified: {last_modified}'))
-    if len(last_modified) == 0:
-        return ''
+          pages: {pages}\n\
+          max_length: {max_length}'))
+
+    last_modified_list = []
+    for filename, page_info in pages.items():
+        last_modified_list.append(
+            {'title': page_info['metadata'].get('title'),
+             'filename': filename,
+             'last_modified': page_info['metadata'].get('last_modified')}
+        )
+    last_modified_list.sort(key=lambda item: item['last_modified'], reverse=True)
+    recent_list = last_modified_list[:max_length]
 
     html = '<section class="recent-list"><h2>Recent Changes:</h2><ul>'
-    for page in last_modified:
-        lm = page['metadata']['last_modified']
-        title = page['metadata']['title']
-        html += f'''<li>{lm}: <a href="{links.kebabify(title)}.html">{title}</a></li>'''
+    for page in recent_list:
+        formatted_lm_time = time.strftime(DATE_FORMAT, page.get('last_modified'))
+        title, filename = page.get('title'), page.get('filename')
+        html += f'''<li>{formatted_lm_time}: <a href="{filename}.html">{title}</a></li>'''
     html += '</ul></section>'
     return html
 
 
-def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
-    """ Make sitemap out of index and all seen pages """
-    logger = logging.getLogger('make_sitemap')
+def prepare_page_for_file(page_info: dict, filename: str, tab_size: int) -> str:
+    logger = logging.getLogger('prepare_page_for_file')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          page_info: {page_info}\n\
+          filename: {filename}\n\
+          tab_size: {tab_size}'))
+
+    # If page is linked to but it hasn't been made yet, give it placeholder metadata
+    if not page_info.get('metadata'):
+        page_info['metadata'] = dict()
+    page_info['metadata'] = {'title': page_info['metadata'].get('title', filename),
+                             'description': page_info['metadata'].get('description', ''),
+                             'last_modified': page_info['metadata'].get('last_modified', time.gmtime(0))}
+    logger.debug(f'Page metadata: {page_info["metadata"]}')
+
+    content = marko.convert(page_info.get('content', 'There\'s currently nothing here.'))
+    content = content.replace('\t', ' ' * tab_size)
+    content = f'<h1 id="title">{page_info["metadata"].get("title")}</h1>{content}'
+    content = links.add_external(content)
+    content = links.add_local(content)
+    content = links.add_backlinks(content, page_info.get('backlinks', []))
+    content = add_last_modified(content, page_info['metadata'].get('last_modified'))
+
+    content = place_in_container('article', 'content', content)
+    content = place_in_container('main', 'main', content)
+
+    return content
+
+
+def make_sitemap_header(index: dict, pages: dict, recent_list_length: int) -> str:
+    logger = logging.getLogger('make_sitemap_header')
     logger.debug(dedent(f'\
         Running with:\n\
           index: {index}\n\
-          sitemap: {sitemap}\n\
-          recent_list: {recent_list}\n\
-          frame: {frame}'))
+          pages: {pages}\n\
+          recent_list_length: {recent_list_length}'))
+
     index_html = f'<h1 id="title">{index["metadata"].get("title", "Sitemap")}</h1>'
     index_html += marko.convert(index.get('content', ''))
-    index_html += make_recent_list(recent_list)
-    
-    sitemap_html = ''
+    index_html += format_recent_list(pages, recent_list_length)
+    return index_html
+
+
+def make_wiki_index(sitemap: dict, pages: dict) -> str:
+    logger = logging.getLogger('make_wiki_index')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          sitemap: {sitemap}'))
 
     def convert_folder_to_html(folder_name: str, display_name: str = None) -> str:
         inner_logger = logger.getChild('convert_folder_to_html')
@@ -218,32 +265,42 @@ def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
             Running with:\n\
               folder_name: {folder_name}\n\
               display_name: {display_name}'))
+
         if not display_name:
             display_name = folder_name if folder_name else "[root]"
         display_name = display_name.replace('/', '/<wbr/>')
-        html = ''
-        sorted_folder_list = sorted(sitemap.get(folder_name), key=lambda page_info: page_info.get('title').lower())
-        html += f'<details><summary>{display_name}</summary><ul>'
-        for page in sorted_folder_list:
-            title, filename, description = page.get('title'), page.get('filename'), page.get('description')
-            formatted_title = f'<a href="{filename}.html">{title}</a>'
-            formatted_description = f' - {description}' if description else ''
-            html += f'<li>{formatted_title}{formatted_description}</li>'
+        sorted_folder_list = sorted(sitemap.get(folder_name), key=lambda name: name.lower())
+        html = f'<details><summary>{display_name}</summary><ul>'
+        for filename in sorted_folder_list:
+            page_info = pages.get(filename)
+            formatted_title = f'<a href="{filename}.html">{page_info["metadata"].get("title")}</a>'
+            if description := page_info["metadata"].get("description"):
+                html += f'<li>{formatted_title} - {description}</li>'
+            else:
+                html += f'<li>{formatted_title}</li>'
         html += '</ul></details>'
         html = place_in_container('div', None, html)
         return html
 
     sorted_folders = sorted(sitemap.keys(), key=lambda folder_name: folder_name.lower())
+    wiki_index_html = ''
     for folder in sorted_folders:
-        if folder == '.stubs':
-            continue
-        sitemap_html += convert_folder_to_html(folder)
+        wiki_index_html += convert_folder_to_html(folder)
 
-    if sitemap.get('.stubs'):
-        sitemap_html += convert_folder_to_html('.stubs', 'Wiki Stubs')
+    return wiki_index_html
 
-    page_html = place_in_container('main', 'main', index_html + sitemap_html)
-    return fill_frame(frame, page_html, index.get('metadata', dict()))
+
+def make_sitemap(sitemap_html: str, frame: str, index_metadata: dict) -> str:
+    """ Make sitemap out of index content and frame """
+    logger = logging.getLogger('make_sitemap')
+    logger.debug(dedent(f'\
+        Running with:\n\
+          sitemap_html: {sitemap_html}\n\
+          frame: {frame}\n\
+          index_metadata: {index_metadata}'))
+
+    page_html = place_in_container('main', 'main', sitemap_html)
+    return fill_frame(frame, page_html, index_metadata)
 
 
 ################
@@ -259,9 +316,9 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
           pages_dir: {pages_dir}\n\
           output_dir: {output_dir}\n\
           build_config: {build_config}'))
+
     pages = dict()
     media_files = set()
-    last_modified_pages = list()
 
     for subfolder, _, files in os.walk(pages_dir):
         logger.info(f'Folder: {subfolder}')
@@ -290,9 +347,6 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
             if page_filename in RESERVED:
                 logger.debug(f'Filename in RESERVED: {page_filename}')
                 page_filename += '_'
-
-            if build_config.get('recent_list'):
-                last_modified_pages = add_to_last_modified_pages(page, last_modified_pages, build_config.get('recent_list_length'))
 
             # add backlinks to all pages this page links to
             for link in page['links']:
@@ -326,17 +380,11 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
 
     # If there is an index file, build page dict
     if os.path.isfile(os.path.join(swiki_dir, 'index.md')):
-        pages['{{SITE INDEX}}'] = make_page_dict(pages_dir, '_swiki', 'index.md', True)
+        pages['{{SITE INDEX}}'] = make_page_dict(pages_dir, '_swiki', 'index.md')
         logger.debug(f'Index file: {pages["{{SITE INDEX}}"]}')
 
     # Load frame file
-    with open(os.path.join(swiki_dir, 'frame.html'), 'r') as f:
-        frame = f.read()
-        # Remove extra space in frame code
-        frame = re.sub(r'(?<=\n)\s*', '', frame)
-        frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
-        frame = re.sub(r'(?<=[;{}(*/)])[\s]*', '', frame)
-        logger.debug(f'Filled frame: {frame}')
+    frame = load_frame(swiki_dir)
 
     # Build all files and populate sitemap dict
     sitemap = dict()
@@ -344,41 +392,24 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     for filename, info in pages.items():
         logger.info(f'Page: {filename}')
         # If it's the index/sitemap page, don't build it
-        if info.get('index'):
+        if filename == '{{SITE INDEX}}':
             index = info
             continue
-        # If page is linked to but it hasn't been made yet, give it placeholder metadata
-        if not info.get('metadata'):
-            info['metadata'] = dict()
-        info['metadata'] = {'title': info['metadata'].get('title', filename),
-                            'description': info['metadata'].get('description', ''),
-                            'last_modified': info['metadata'].get('last_modified', '')}
-        logger.debug(f'Page metadata: {info["metadata"]}')
-
-        content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
-        content = content.replace('\t', ' ' * build_config.get('tab_size'))
-        content = f'<h1 id="title">{info["metadata"].get("title")}</h1>{content}'
-        content = links.add_external(content)
-        content = links.add_local(content)
-        content = links.add_backlinks(content, info.get('backlinks', []))
-        content = add_last_modified(content, info['metadata'].get('last_modified'))
-
-        content = place_in_container('article', 'content', content)
-        content = place_in_container('main', 'main', content)
-        filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
-
+        file_content = prepare_page_for_file(info, filename, build_config['tab_size'])
+        filled_frame = fill_frame(frame, file_content, info.get('metadata', dict()))
         logger.debug(f'Writing file: {filename}.html')
         with open(os.path.join(output_dir, f'{filename}.html'), 'w') as f:
             f.write(filled_frame)
 
-        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'),
-                                       'description': info['metadata'].get('description'),
-                                       'filename': filename},
-                                      # If no folder here, then it is a stub
-                                      info.get('folder', '.stubs'),
-                                      sitemap)
+        # If page doesn't belong to a folder, then it is a stub
+        dest_folder = info.get('folder', STUBS_FOLDER_NAME)
+        sitemap = add_page_to_sitemap(filename, dest_folder, sitemap)
 
-    filled_frame = make_sitemap(index, sitemap, last_modified_pages, frame)
+    sitemap_header = make_sitemap_header(index, pages, build_config.get('recent_list_length'))
+    wiki_index = make_wiki_index(sitemap, pages)
+    sitemap_html = sitemap_header + wiki_index
+    filled_frame = make_sitemap(sitemap_html, frame, index['metadata'])
+
     logger.debug(f'Writing sitemap: index.html')
     with open(os.path.join(output_dir, 'index.html'), 'w') as f:
         f.write(filled_frame)
@@ -402,10 +433,7 @@ if __name__ == "__main__":
     args = argparser.parse_args()
 
     # Set log level to either INFO or DEBUG, if -v or -vv
-    logging.basicConfig(
-        filename=f"build.log",
-        level=logging.WARN - args.verbose * 10
-    )
+    logging.basicConfig(filename=f"build.log", level=logging.WARN - args.verbose * 10)
 
     if not os.path.isdir(args.input_dir):
         sys.exit(f'Input folder not found: {args.input_dir}')
