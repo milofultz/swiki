@@ -47,7 +47,6 @@ Tags | Description
 `{{title}}` | Title described in the front matter of your index.md file
 `{{description}}` | Description described in the front matter of your index.md file
 `{{content}}` | The content within your index.md file
-`{{ff_size}}` | Use this to let users know the download size in kb (or mb if real big) of a potentially unwieldy fatfile
 
 Here is an example that includes basic CSS to make a generally good looking and easy to read webpage.
 
@@ -73,7 +72,6 @@ Here is an example that includes basic CSS to make a generally good looking and 
 
     <footer>
         <a href="index.html">Sitemap</a>
-        <a href="fatfile.html">Fatfile ({{ff_size}})</a>
     </footer>
 </body>
 </html>
@@ -107,7 +105,6 @@ A `config.ini` file can be used to overwrite certain parser parameters. For exam
 
 Key | Effect | Default Value
 --- | --- | ---
-`build_fatfile` | Whether to build the [fatfile](#fatfile) or not | `True`
 `recent_list` | Whether to build the [recent list](#recent-list) into the sitemap | `False`
 `recent_list_length` | How many items should be included in the [recent list](#recent-list) | `10`
 `tab_size` | How many spaces a tab character wil be converted to when parsing the page content | `2`
@@ -123,14 +120,9 @@ python3 swiki.py input_folder output_folder [flags]
 Flag | Effect
 --- | ---
 `--delete-current-html`, `-d` | Non-recursively delete all existing HTML files in the build directory
-`--no-fatfile`, `-nf` | Do not create [fatfile](#fatfile) on build
 `--recent-list`, `-rl` | Create a [recent changes list](#recent-list)
 `--recent-list-length [n]`, `-rll [n]` | Set the length of the [recent list](#recent-list) to `n` entries
 `--verbose`, `-v` | Print debug information during build to `build.log`. Use `-vv` for (many) more details
-
-### Fatfile
-
-A `fatfile.html` will be created when making your wiki. This fatfile contains all of your page contents compiled into one huge file for easy searching and stumbling on new content.
 
 ### Recent List
 
@@ -154,7 +146,6 @@ This is the content of the {{Markdown}} file. This {{Markdown reference|Markdown
 This would render out five files, all using the frame:
 
 * `index.html` - The index and sitemap, containing the rendered contents of `index.md` and a sitemap of all three above pages.
-* `fatfile.html` - The [fatfile](#fatfile).
 * `rendering-a-page.html` - The file you see above.
 * `markdown.html` - This file exists with only backlinks, as no file with a title of 'Markdown' exists.
 * `page.html` - This file exists with only backlinks, for the same reason.

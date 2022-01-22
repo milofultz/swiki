@@ -14,7 +14,7 @@ import modules.link_utilities as links
 
 
 IGNORE = ['.DS_Store']
-RESERVED = ['index', 'fatfile']
+RESERVED = ['index']
 
 marko = Markdown(extensions=['gfm'])
 
@@ -180,24 +180,6 @@ def fill_frame(frame: str, content: str, metadata: dict) -> str:
     return frame
 
 
-def make_fatfile(info: dict, fatfile: str, frame: str, output_dir: str):
-    """ Make fatfile out of content of every page """
-    logger = logging.getLogger('make_fatfile')
-    logger.debug(dedent(f'\
-        Running with:\n\
-          info: {info}\n\
-          fatfile: {fatfile}\n\
-          frame: {frame}\n\
-          output_dir: {output_dir}'))
-    fatfile = re.sub(re.compile(r'\sid=".*?"'), '', fatfile)
-    fatfile = '<h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>' + fatfile
-    fatfile = place_in_container('section', 'fatfile', fatfile)
-    fatfile = place_in_container('main', 'main', fatfile)
-    filled_frame = fill_frame(frame, fatfile, info.get('metadata', dict()))
-    with open(os.path.join(output_dir, 'fatfile.html'), 'w') as f:
-        f.write(filled_frame)
-
-
 def make_recent_list(last_modified: list) -> str:
     logger = logging.getLogger('make_recent_list')
     logger.debug(dedent(f'\
@@ -278,11 +260,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
     pages = dict()
     media_files = set()
 
-    ff_bytes = 0
     last_modified_pages = list()
-
-    with open(os.path.join(pages_dir, '_swiki', 'frame.html'), 'r') as f:
-        frame_bytes = len(f.read().encode('utf-8'))
 
     for subfolder, _, files in os.walk(pages_dir):
         logger.info(f'Folder: {subfolder}')
@@ -312,7 +290,6 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
                 logger.debug(f'Filename in RESERVED: {page_filename}')
                 page_filename += '_'
 
-            ff_bytes += len(page.get('content', '').encode('utf-8')) + frame_bytes
             if build_config.get('recent_list'):
                 last_modified_pages = add_to_last_modified_pages(page, last_modified_pages, build_config.get('recent_list_length'))
 
@@ -358,17 +335,10 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         frame = re.sub(r'(?<=\n)\s*', '', frame)
         frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
         frame = re.sub(re.compile(r'(?<=[;{}(*/)])[\s]*'), '', frame)
-        ff_bytes *= 1.024  # roughly correct at least for my purposes
-        if ff_bytes < 1_000_000:
-            ff_size = f"~{int(ff_bytes // 1_000)}kb"
-        else:
-            ff_size = f"~{round(ff_bytes / 1_000_000, 2)}mb"
-        frame = frame.replace('{{ff_size}}', ff_size)
         logger.debug(f'Filled frame: {frame}')
 
     # Build all files and populate sitemap dict
     sitemap = dict()
-    fatfile = ''
     index = {'metadata': dict()}
     for filename, info in pages.items():
         logger.info(f'Page: {filename}')
@@ -394,12 +364,6 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         content = links.add_backlinks(content, info.get('backlinks', []))
         content = add_last_modified(content, info['metadata'].get('last_modified'))
 
-        if build_config.get('build_fatfile'):
-            fatfile_content = re.sub(rf'(?<=<h1 id="title">){re.escape(info["metadata"].get("title"))}(?=</h1>)',
-                                     f'<a href="{filename}.html">{info["metadata"].get("title")}</a>',
-                                     content)
-            fatfile += place_in_container('article', None, fatfile_content)
-
         content = place_in_container('article', 'content', content)
         content = place_in_container('main', 'main', content)
         filled_frame = fill_frame(frame, content, info.get('metadata', dict()))
@@ -413,17 +377,6 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
                                       info.get('folder', '.stubs'),
                                       sitemap)
 
-    if build_config.get('build_fatfile'):
-        logger.info(f'Building fatfile')
-        fatfile_title = 'Fatfile'
-        if site_title := index["metadata"].get("title"):
-            fatfile_title = f'{site_title} - Fatfile'
-        fatfile_description = index["metadata"].get("description", "")
-        fatfile_info = {'metadata': {
-            'title': fatfile_title,
-            'description': fatfile_description
-        }}
-        make_fatfile(fatfile_info, fatfile, frame, output_dir)
     filled_frame = make_sitemap(index, sitemap, last_modified_pages, frame)
     logger.debug(f'Writing sitemap: index.html')
     with open(os.path.join(output_dir, 'index.html'), 'w') as f:
@@ -439,8 +392,6 @@ if __name__ == "__main__":
                            help='the path to the output directory')
     argparser.add_argument('--delete-current-html', '-d', action='store_true',
                            help='delete all HTML in output directory before building')
-    argparser.add_argument('--no-fatfile', '-nf', action='store_false', default=True, dest="build_fatfile",
-                           help='do not create fatfile on build')
     argparser.add_argument('--recent-list', '-rl', default=False, action="store_true",
                            help='create most recently modified pages list on index')
     argparser.add_argument('--recent-list-length', '-rll', default=10,
@@ -464,7 +415,6 @@ if __name__ == "__main__":
 
     config = {
         'tab_size': 2,
-        'build_fatfile': args.build_fatfile,
         'recent_list': args.recent_list,
         'recent_list_length': args.recent_list_length,
     }

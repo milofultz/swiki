@@ -552,80 +552,6 @@ class FillFrameTestCase(unittest.TestCase):
             </html>"""))
 
 
-class MakeFatfileTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.test_path = make_test_directory()
-        cls.test_page_dict = {
-            'folder': 'sub',
-            'metadata': {
-                'title': 'yeah',
-                'description': 'uh huh',
-                'last_modified': '202001010000',
-            },
-            'content': 'The content',
-            'links': [],
-            'index': True
-        }
-        cls.test_frame = dedent("""\
-            <html>
-                <head>
-                    <title>{{title}}</title>
-                    <meta name="description" content="{{description}}">
-                </head>
-                <body>
-                    {{content}}
-                </body>
-            </html>""")
-        cls.test_fatfile_path = os.path.join(cls.test_path, 'fatfile.html')
-
-    def tearDown(self):
-        if os.path.isfile(self.test_fatfile_path):
-            os.remove(self.test_fatfile_path)
-
-    def test_basic(self):
-        test_fatfile_content = 'Test content'
-        swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
-                           self.test_frame, self.test_path)
-        with open(self.test_fatfile_path, 'r') as f:
-            actual_fatfile = f.read()
-        expected_fatfile = dedent(f"""\
-            <html>
-                <head>
-                    <title>yeah</title>
-                    <meta name="description" content="uh huh">
-                </head>
-                <body>
-                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p>{test_fatfile_content}</section></main>
-                </body>
-            </html>""")
-        self.assertEqual(expected_fatfile, actual_fatfile)
-
-    def test_remove_ids(self):
-        test_text = 'Test content'
-        test_fatfile_content = f'<p id="remove-this">{test_text}</p>'
-        swiki.make_fatfile(self.test_page_dict, test_fatfile_content,
-                           self.test_frame, self.test_path)
-        with open(self.test_fatfile_path, 'r') as f:
-            actual_fatfile = f.read()
-        expected_fatfile = dedent(f"""\
-            <html>
-                <head>
-                    <title>yeah</title>
-                    <meta name="description" content="uh huh">
-                </head>
-                <body>
-                    <main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><p>{test_text}</p></section></main>
-                </body>
-            </html>""")
-        self.assertEqual(expected_fatfile, actual_fatfile)
-
-    @classmethod
-    def tearDownClass(cls):
-        if os.path.isdir(cls.test_path):
-            shutil.rmtree(cls.test_path)
-
-
 class MakeSitemapTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -809,8 +735,7 @@ class MakeWikiTestCase(unittest.TestCase):
         touch(test_frame_path, test_frame_content)
         test_css_path = os.path.join(test_swiki_folder, 'style.css')
         touch(test_css_path, 'body { font-size: 40rem; color: blue; }')
-        cls.test_config = {'tab_size': 2, 'build_fatfile': False,
-                           'recent_list': False, 'recent_list_length': 10}
+        cls.test_config = {'tab_size': 2, 'recent_list': False, 'recent_list_length': 10}
 
     def tearDown(self):
         empty(self.test_output_folder)
@@ -901,53 +826,8 @@ class MakeWikiTestCase(unittest.TestCase):
             actual_index_file_content = f.read()
         self.assertEqual(expected_index_file_content, actual_index_file_content)
 
-    def test_fatfile(self):
-        fatfile_config = {
-            **self.test_config,
-            'build_fatfile': True
-        }
-        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
-                        fatfile_config)
-        test_fatfile_file_path = os.path.join(self.test_output_folder, 'fatfile.html')
-        self.assertTrue(os.path.isfile(test_fatfile_file_path))
-        # This is ordered by page parse/insertion in pages dict in build
-        expected_fatfile_file_content = dedent(f"""\
-            <html><head><title>Fatfile</title><meta name="description" content=""></head><body><main id="main"><section id="fatfile"><h1>Fatfile</h1><p>This file contains the contents of every page in the wiki in no order whatsoever.</p><article><h1><a href="another-file.html">Another File</a></h1>
-            <p>Another set of content, with <em>italics</em>!</p>
-            
-            <p class="last-modified">Last modified: {self.another_test_file_lm}</p></article><article><h1><a href="example-file.html">Example File</a></h1>
-            <p>Some content.</p>
-            
-            <p class="last-modified">Last modified: {self.test_file_lm}</p></article></section></main></body></html>""")
-        with open(test_fatfile_file_path, 'r') as f:
-            actual_fatfile_file_content = f.read()
-        self.assertEqual(expected_fatfile_file_content, actual_fatfile_file_content)
-
-    def test_special_chars_in_title_with_fatfile(self):
-        # SET UP
-        test_file_path_1 = os.path.join(self.test_input_folder, 'cplusplus.md')
-        test_file_content_1 = dedent(f"""\
-            ---
-            title: Regex Doesn't Like These Special Characters
-            description: Example description.
-            ---
-            
-            An {{{{ellipsis...}}}} What about {{{{C++}}}}?""")
-        touch(test_file_path_1, test_file_content_1)
-        fatfile_config = {
-            **self.test_config,
-            'build_fatfile': True
-        }
-
-        # TESTS
-        swiki.make_wiki(self.test_input_folder, self.test_output_folder,
-                        fatfile_config)
-        # should not throw from there being regex special characters in the title
-        self.assertTrue(True)
-
     def test_recent(self):
-        test_recent_config = {'tab_size': 2, 'build_fatfile': False,
-                              'recent_list': True, 'recent_list_length': 10}
+        test_recent_config = {'tab_size': 2, 'recent_list': True, 'recent_list_length': 10}
         swiki.make_wiki(self.test_input_folder, self.test_output_folder,
                         test_recent_config)
         # should show both pages added in order of creation
@@ -965,8 +845,7 @@ class MakeWikiTestCase(unittest.TestCase):
         self.assertEqual(expected_index_file_content, actual_index_file_content)
 
     def test_recent_list_length(self):
-        test_recent_config = {'tab_size': 2, 'build_fatfile': False,
-                              'recent_list': True, 'recent_list_length': 1}
+        test_recent_config = {'tab_size': 2, 'recent_list': True, 'recent_list_length': 1}
         swiki.make_wiki(self.test_input_folder, self.test_output_folder,
                         test_recent_config)
         # should show both pages added in order of creation
