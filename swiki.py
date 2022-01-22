@@ -334,7 +334,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         # Remove extra space in frame code
         frame = re.sub(r'(?<=\n)\s*', '', frame)
         frame = re.sub(r'(?<=>)\s*(?=<)', '', frame)
-        frame = re.sub(re.compile(r'(?<=[;{}(*/)])[\s]*'), '', frame)
+        frame = re.sub(r'(?<=[;{}(*/)])[\s]*', '', frame)
         logger.debug(f'Filled frame: {frame}')
 
     # Build all files and populate sitemap dict
@@ -356,9 +356,7 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
 
         content = marko.convert(info.get('content', 'There\'s currently nothing here.'))
         content = content.replace('\t', ' ' * build_config.get('tab_size'))
-        content = dedent(f'''\
-            <h1 id="title">{info["metadata"].get("title")}</h1>\n\
-            {content}''')
+        content = f'<h1 id="title">{info["metadata"].get("title")}</h1>{content}'
         content = links.add_external(content)
         content = links.add_local(content)
         content = links.add_backlinks(content, info.get('backlinks', []))
