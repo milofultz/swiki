@@ -225,8 +225,10 @@ def make_sitemap(index: dict, sitemap: dict, recent_list: list, frame: str):
         sorted_folder_list = sorted(sitemap.get(folder_name), key=lambda page_info: page_info.get('title').lower())
         html += f'<details><summary>{display_name}</summary><ul>'
         for page in sorted_folder_list:
-            title, filename = page.get('title'), page.get('filename')
-            html += f'<li><a href="{filename}.html">{title}</a></li>'
+            title, filename, description = page.get('title'), page.get('filename'), page.get('description')
+            formatted_title = f'<a href="{filename}.html">{title}</a>'
+            formatted_description = f' - {description}' if description else ''
+            html += f'<li>{formatted_title}{formatted_description}</li>'
         html += '</ul></details>'
         html = place_in_container('div', None, html)
         return html
@@ -259,7 +261,6 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
           build_config: {build_config}'))
     pages = dict()
     media_files = set()
-
     last_modified_pages = list()
 
     for subfolder, _, files in os.walk(pages_dir):
@@ -370,7 +371,9 @@ def make_wiki(pages_dir: str, output_dir: str, build_config: dict):
         with open(os.path.join(output_dir, f'{filename}.html'), 'w') as f:
             f.write(filled_frame)
 
-        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'), 'filename': filename},
+        sitemap = add_page_to_sitemap({'title': info['metadata'].get('title'),
+                                       'description': info['metadata'].get('description'),
+                                       'filename': filename},
                                       # If no folder here, then it is a stub
                                       info.get('folder', '.stubs'),
                                       sitemap)
