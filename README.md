@@ -1,3 +1,5 @@
+# Ported to codeberg: https://codeberg.org/milofultz/swiki
+
 # {{SWIKI}}
 
 Make a wiki with backlinking from [Markdown][] fast.
